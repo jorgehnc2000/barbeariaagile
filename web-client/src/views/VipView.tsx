@@ -13,15 +13,24 @@ interface VipViewProps {
   onNavigate: (view: ViewId) => void;
 }
 
-const planIcons: Record<string, typeof Crown> = {
-  'plan-trial': Sparkles,
-  'plan-ultra': Zap,
-  'plan-master': Crown,
-};
-
 export function VipView({ onNavigate }: VipViewProps) {
-  const { plans: vipPlans, currentUser, openLegacyAccount, session, requestAuth } = useShop();
+  const {
+    plans: vipPlans,
+    currentUser,
+    session,
+    requestAuth,
+    plansMessage,
+    vipEnabled,
+    subscribePlan,
+  } = useShop();
   const [selected, setSelected] = useState<string>('');
+  const [cardholder, setCardholder] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
   useEffect(() => {
     if (selected) return;
     if (currentUser.membershipTierId) {
@@ -31,6 +40,35 @@ export function VipView({ onNavigate }: VipViewProps) {
     if (vipPlans[0]) setSelected(vipPlans[0].id);
   }, [selected, currentUser.membershipTierId, vipPlans]);
   const isCurrent = Boolean(selected) && selected === currentUser.membershipTierId;
+  const selectedPlan = vipPlans.find((plan) => plan.id === selected);
+
+  async function pay() {
+    if (!selectedPlan || isCurrent || busy) return;
+    if (!session) {
+      requestAuth();
+      return;
+    }
+    setBusy(true);
+    setNotice(null);
+    setDone(false);
+    try {
+      await subscribePlan({
+        planId: selectedPlan.id,
+        cardNumber,
+        expiry,
+        cvv,
+        cardholder,
+      });
+      setCardNumber('');
+      setCvv('');
+      setDone(true);
+      setNotice('Assinatura enviada ao Mercado Pago.');
+    } catch (cause) {
+      setNotice(cause instanceof Error ? cause.message : 'Não foi possível assinar.');
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -89,8 +127,14 @@ export function VipView({ onNavigate }: VipViewProps) {
 
       {/* Plans grid */}
       <div className="grid gap-4 lg:grid-cols-3">
+        {vipPlans.length === 0 && (
+          <p className="text-sm text-zinc-400 lg:col-span-3">
+            {plansMessage ?? 'Nenhum plano disponível.'}
+          </p>
+        )}
         {vipPlans.map((plan, idx) => {
-          const Icon = planIcons[plan.id] ?? Sparkles;
+          const icons = [Sparkles, Zap, Crown];
+          const Icon = icons[idx % icons.length];
           const active = selected === plan.id;
           return (
             <motion.div
@@ -136,23 +180,57 @@ export function VipView({ onNavigate }: VipViewProps) {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+        className="flex flex-col gap-3"
       >
         <p className="text-sm text-zinc-400">
-          {selected === 'plan-trial'
-            ? 'Inicie seu período de teste gratuitamente.'
-            : isCurrent
-              ? 'Este é o seu plano atual. Aproveite todos os benefícios.'
-              : 'Cancele quando quiser, sem burocracia.'}
+          {isCurrent
+            ? 'Este é o seu plano atual.'
+            : vipEnabled
+              ? 'O cartão é tokenizado no Mercado Pago. A cobrança usa o plano sincronizado.'
+              : plansMessage}
         </p>
+        {!isCurrent && selectedPlan && (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <input
+              value={cardholder}
+              onChange={(event) => setCardholder(event.target.value)}
+              placeholder="Nome no cartão"
+              className="rounded-xl border border-zinc-800 bg-ink-950 px-4 py-3 text-sm text-white outline-none focus:border-gold-500/50 sm:col-span-2"
+            />
+            <input
+              inputMode="numeric"
+              value={cardNumber}
+              onChange={(event) => setCardNumber(event.target.value)}
+              placeholder="Número do cartão"
+              className="rounded-xl border border-zinc-800 bg-ink-950 px-4 py-3 text-sm text-white outline-none focus:border-gold-500/50 sm:col-span-2"
+            />
+            <input
+              inputMode="numeric"
+              value={expiry}
+              onChange={(event) => setExpiry(event.target.value)}
+              placeholder="MM/AA"
+              className="rounded-xl border border-zinc-800 bg-ink-950 px-4 py-3 text-sm text-white outline-none focus:border-gold-500/50"
+            />
+            <input
+              inputMode="numeric"
+              value={cvv}
+              onChange={(event) => setCvv(event.target.value)}
+              placeholder="CVV"
+              className="rounded-xl border border-zinc-800 bg-ink-950 px-4 py-3 text-sm text-white outline-none focus:border-gold-500/50"
+            />
+          </div>
+        )}
+        {notice && (
+          <p className={`text-sm ${done ? 'text-emerald-300' : 'text-red-300'}`}>{notice}</p>
+        )}
         <Button
           size="lg"
           leftIcon={<Crown size={20} />}
           className="sm:min-w-[280px]"
-          disabled={isCurrent || !selected}
-          onClick={() => (session ? openLegacyAccount() : requestAuth())}
+          disabled={isCurrent || !selectedPlan || busy || !vipEnabled}
+          onClick={() => void pay()}
         >
-          {isCurrent ? 'Plano Ativo' : `Assinar ${vipPlans.find((p) => p.id === selected)?.name}`}
+          {busy ? 'Assinando…' : isCurrent ? 'Plano Ativo' : `Assinar ${selectedPlan?.name ?? ''}`}
         </Button>
       </motion.div>
     </div>

@@ -64,6 +64,9 @@ type ShopContextValue = {
   services: Service[];
   barbers: Barber[];
   plans: VipPlan[];
+  vipEnabled: boolean;
+  mpPublicKey: string;
+  plansMessage: string | null;
   currentUser: UserProfile;
   upcomingAppointment: Appointment | null;
   session: Session | null;
@@ -85,6 +88,13 @@ type ShopContextValue = {
   signOut: () => Promise<void>;
   pendingReview: PendingReview | null;
   submitReview: (rating: number) => Promise<void>;
+  subscribePlan: (input: {
+    planId: string;
+    cardNumber: string;
+    expiry: string;
+    cvv: string;
+    cardholder: string;
+  }) => Promise<void>;
 };
 
 const ShopContext = createContext<ShopContextValue | null>(null);
@@ -98,6 +108,9 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const [services, setServices] = useState<Service[]>([]);
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [plans, setPlans] = useState<VipPlan[]>([]);
+  const [vipEnabled, setVipEnabled] = useState(false);
+  const [mpPublicKey, setMpPublicKey] = useState('');
+  const [plansMessage, setPlansMessage] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<UserProfile>(guestUser);
   const [upcomingAppointment, setUpcomingAppointment] = useState<Appointment | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -134,17 +147,28 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
     void (async () => {
       try {
-        const shop = await supabase
+        const shopFull = await supabase
           .from('barbershops')
-          .select('id, slug')
+          .select('id, slug, mp_public_key, vip_enabled')
           .eq('slug', slug)
           .maybeSingle();
+        const shop = shopFull.error
+          ? await supabase.from('barbershops').select('id, slug').eq('slug', slug).maybeSingle()
+          : shopFull;
         if (shop.error) throw shop.error;
         if (!shop.data) throw new Error(`Nenhuma barbearia encontrada para "${slug}".`);
         if (cancelled) return;
 
         const id = String(shop.data.id);
         setBarbershopId(id);
+        const shopRow = shop.data as { mp_public_key?: string; vip_enabled?: boolean };
+        setVipEnabled(shopRow.vip_enabled !== false);
+        setMpPublicKey(String(shopRow.mp_public_key ?? '').trim());
+
+        const { data: earlyAuth } = await supabase.auth.getSession();
+        if (earlyAuth.session?.user) {
+          await ensureClientProfile(id, earlyAuth.session.user);
+        }
 
         const info = await supabase
           .from('barbearia_info')
@@ -178,7 +202,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
         const planRows = await supabase
           .from('plans')
-          .select('id, name, description, benefits, monthly_amount, frequency, active, mp_status')
+          .select('id, name, description, benefits, monthly_amount, frequency, active, mp_status, mp_plan_id')
           .eq('barbershop_id', id)
           .eq('active', true)
           .eq('mp_status', 'synchronized')
@@ -209,9 +233,17 @@ export function ShopProvider({ children }: { children: ReactNode }) {
             }),
           );
         }
-        setPlans(
-          (planRows.data ?? []).map((row, index) => mapPlan(row as Record<string, unknown>, index)),
+        const mappedPlans = (planRows.data ?? []).map((row, index) =>
+          mapPlan(row as Record<string, unknown>, index),
         );
+        setPlans(mappedPlans);
+        if (shopRow.vip_enabled === false) {
+          setPlansMessage('O Clube VIP não está habilitado nesta barbearia.');
+        } else if (mappedPlans.length === 0) {
+          setPlansMessage('Nenhum plano ativo sincronizado com o Mercado Pago.');
+        } else {
+          setPlansMessage(null);
+        }
 
         const { data: authData } = await supabase.auth.getSession();
         const activeSession = authData.session;
@@ -377,6 +409,85 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     [barbershopId, pendingReview, session?.user.id],
   );
 
+  const subscribePlan = useCallback(
+    async (input: {
+      planId: string;
+      cardNumber: string;
+      expiry: string;
+      cvv: string;
+      cardholder: string;
+    }) => {
+      if (!barbershopId) throw new Error('Barbearia não identificada.');
+      if (!vipEnabled) throw new Error('O Clube VIP não está habilitado nesta barbearia.');
+      if (!mpPublicKey || mpPublicKey === 'public_key_not_configured') {
+        throw new Error('A chave pública do Mercado Pago ainda não foi configurada.');
+      }
+      const { data: auth } = await supabase.auth.getSession();
+      const user = auth.session?.user;
+      if (!user?.email) {
+        setAuthOpen(true);
+        throw new Error('Faça login para assinar o Clube VIP.');
+      }
+      const plan = plans.find((item) => item.id === input.planId);
+      if (!plan?.mpPlanId) throw new Error('Este plano ainda não está disponível para assinatura.');
+
+      const expiry = input.expiry.replace(/\D/g, '');
+      if (expiry.length !== 4) throw new Error('Use o vencimento no formato MM/AA.');
+      const month = Number(expiry.slice(0, 2));
+      const year = Number(`20${expiry.slice(2, 4)}`);
+      if (month < 1 || month > 12) throw new Error('Vencimento inválido.');
+
+      const tokenResponse = await fetch(
+        `https://api.mercadopago.com/v1/card_tokens?public_key=${encodeURIComponent(mpPublicKey)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            card_number: input.cardNumber.replace(/\D/g, ''),
+            expiration_month: month,
+            expiration_year: year,
+            security_code: input.cvv.replace(/\D/g, ''),
+            cardholder: { name: input.cardholder.trim() },
+          }),
+        },
+      );
+      const tokenBody = (await tokenResponse.json().catch(() => ({}))) as {
+        id?: string;
+        message?: string;
+        error?: string;
+      };
+      if (!tokenResponse.ok || !tokenBody.id) {
+        throw new Error(tokenBody.message || tokenBody.error || 'Não foi possível validar o cartão.');
+      }
+
+      const { data, error: invokeError } = await supabase.functions.invoke('create-subscription', {
+        body: {
+          plan_id: plan.id,
+          card_token_id: tokenBody.id,
+          barbershop_id: barbershopId,
+          user_id: user.id,
+          email: user.email,
+        },
+      });
+      if (invokeError) {
+        const context = (invokeError as { context?: Response }).context;
+        let detail = invokeError.message;
+        if (context) {
+          const payload = (await context.json().catch(() => null)) as { error?: string; message?: string } | null;
+          detail = payload?.error || payload?.message || detail;
+        }
+        throw new Error(detail || 'Não foi possível criar a assinatura.');
+      }
+      if (data && typeof data === 'object' && 'error' in data && data.error) {
+        throw new Error(String(data.error));
+      }
+
+      const profile = await loadProfile(barbershopId, user.id, user);
+      setCurrentUser(profile.user);
+    },
+    [barbershopId, mpPublicKey, plans, vipEnabled],
+  );
+
   const value = useMemo<ShopContextValue>(
     () => ({
       loading,
@@ -387,6 +498,9 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       services,
       barbers,
       plans,
+      vipEnabled,
+      mpPublicKey,
+      plansMessage,
       currentUser,
       upcomingAppointment,
       session,
@@ -403,6 +517,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       signOut,
       pendingReview,
       submitReview,
+      subscribePlan,
     }),
     [
       loading,
@@ -413,6 +528,9 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       services,
       barbers,
       plans,
+      vipEnabled,
+      mpPublicKey,
+      plansMessage,
       currentUser,
       upcomingAppointment,
       session,
@@ -426,6 +544,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       signOut,
       pendingReview,
       submitReview,
+      subscribePlan,
     ],
   );
 
@@ -492,6 +611,7 @@ function mapPlan(row: Record<string, unknown>, index: number): VipPlan {
     tagline: String(row.description ?? ''),
     highlighted: index === 0,
     benefits,
+    mpPlanId: String(row.mp_plan_id ?? ''),
   };
 }
 

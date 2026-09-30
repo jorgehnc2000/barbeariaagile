@@ -40,6 +40,7 @@ export interface VipPlan {
   highlighted: boolean;
   badge?: string;
   benefits: string[];
+  mpPlanId?: string;
 }
 
 export interface UserProfile {
