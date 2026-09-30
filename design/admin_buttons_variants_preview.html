@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Botões admin — variantes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL@24,300,0&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: "#121212",
+            surface: "#1E1E1E",
+            deep: "#121414",
+            border: "#2A2A2A",
+            gold: "#D4AF37",
+            "gold-bright": "#FFB300",
+            "gold-deep": "#B8962E",
+            muted: "#777777",
+            mist: "#999999",
+            error: "#E53935",
+          },
+          fontFamily: {
+            display: ["Sora", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { font-family: Inter, sans-serif; }
+    .material-symbols-outlined {
+      font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 24;
+      vertical-align: middle;
+    }
+    .glass {
+      background: rgba(18, 20, 20, 0.55);
+      border: 0.5px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(12px);
+    }
+    .pick:hover { border-color: rgba(212,175,55,0.45); }
+    .pick.selected {
+      border-color: rgba(212,175,55,0.7);
+      box-shadow: 0 0 0 1px rgba(212,175,55,0.25);
+    }
+  </style>
+</head>
+<body class="bg-bg text-white min-h-screen">
+  <header class="sticky top-0 z-20 border-b border-white/5 bg-bg/90 backdrop-blur px-6 py-4">
+    <p class="text-[10px] tracking-[0.2em] text-mist/80 uppercase font-semibold">Preview · sem alterar o app</p>
+    <h1 class="font-display text-xl font-bold tracking-tight">Botões — o que melhorar</h1>
+    <p class="text-sm text-mist mt-1 max-w-2xl">
+      O Soft Forge (raio 14) já está certo. O que ainda pesa: CTA admin <strong class="text-white/90">compacto demais (44px)</strong>
+      contra o DESIGN.md (52px), ouro flat sem presença, e ações ghost sem hierarquia clara.
+    </p>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 md:px-8 py-8 space-y-10">
+
+    <!-- HOJE -->
+    <section class="rounded-2xl border border-dashed border-white/15 p-6 bg-surface/40">
+      <p class="text-[10px] tracking-widest text-error/90 uppercase font-bold mb-4">Hoje no app</p>
+      <div class="flex flex-wrap items-center gap-4">
+        <button class="inline-flex items-center gap-2 rounded-[14px] bg-gold text-bg font-bold text-[13px] h-11 px-5">
+          <span class="material-symbols-outlined text-[18px]">add</span> Novo barbeiro
+        </button>
+        <button class="inline-flex items-center gap-1.5 text-xs font-semibold text-mist px-3 py-2 rounded-[10px]">
+          <span class="material-symbols-outlined text-[16px]">edit</span> Editar
+        </button>
+        <button class="inline-flex items-center gap-1.5 text-xs font-semibold text-mist/70 px-3 py-2 rounded-[10px]">
+          <span class="material-symbols-outlined text-[16px]">delete</span> Remover
+        </button>
+      </div>
+      <ul class="mt-4 text-xs text-mist space-y-1 list-disc pl-4">
+        <li>Altura 44px — parece chip, não CTA de operação</li>
+        <li>Ouro sólido sem gradiente/spotlight — “botão Material dourado”</li>
+        <li>Ghost Editar/Remover no mesmo peso visual</li>
+      </ul>
+    </section>
+
+    <p class="text-[11px] tracking-[0.18em] uppercase text-gold font-semibold">Escolha uma direção</p>
+
+    <div class="grid md:grid-cols-3 gap-5">
+
+      <!-- A -->
+      <article class="pick glass rounded-2xl p-5 cursor-pointer transition-colors" data-pick="A" onclick="selectPick(this)">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-[10px] tracking-widest uppercase font-bold text-gold">A · Atelier Peak</span>
+          <span class="text-[10px] text-mist">recomendado</span>
+        </div>
+        <div class="space-y-4 min-h-[140px]">
+          <button class="inline-flex items-center gap-2.5 rounded-[14px] font-bold text-[14px] h-[52px] px-6 text-bg
+            bg-gradient-to-b from-gold-bright to-gold-deep
+            shadow-[0_8px_22px_rgba(212,175,55,0.22)]">
+            <span class="material-symbols-outlined text-[20px]">add</span> Novo barbeiro
+          </button>
+          <div class="flex items-center gap-1 border-t border-white/5 pt-3">
+            <button class="text-[12px] font-semibold text-mist hover:text-gold px-2 py-1.5">Editar</button>
+            <span class="text-white/15">|</span>
+            <button class="text-[12px] font-semibold text-mist/50 hover:text-error px-2 py-1.5">Remover</button>
+          </div>
+        </div>
+        <p class="text-xs text-mist mt-4 leading-relaxed">
+          Alinha ao DESIGN.md: <strong class="text-white/85">52px</strong>, gradiente ouro, sombra spotlight.
+          Ações viram links tipográficos — zero caixa.
+        </p>
+      </article>
+
+      <!-- B -->
+      <article class="pick glass rounded-2xl p-5 cursor-pointer transition-colors" data-pick="B" onclick="selectPick(this)">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-[10px] tracking-widest uppercase font-bold text-gold">B · Ink Edge</span>
+        </div>
+        <div class="space-y-4 min-h-[140px]">
+          <button class="inline-flex items-center gap-2 rounded-[14px] font-bold text-[14px] h-[48px] px-5
+            border border-gold/70 text-gold bg-gold/10 hover:bg-gold/15">
+            <span class="material-symbols-outlined text-[18px]">add</span> Novo barbeiro
+          </button>
+          <div class="flex items-center justify-end gap-0.5 border-t border-white/5 pt-3">
+            <button class="w-9 h-9 rounded-[10px] text-mist hover:text-gold hover:bg-white/5 flex items-center justify-center" title="Editar">
+              <span class="material-symbols-outlined text-[18px]">edit</span>
+            </button>
+            <button class="w-9 h-9 rounded-[10px] text-mist/55 hover:text-error hover:bg-error/10 flex items-center justify-center" title="Remover">
+              <span class="material-symbols-outlined text-[18px]">delete</span>
+            </button>
+          </div>
+        </div>
+        <p class="text-xs text-mist mt-4 leading-relaxed">
+          CTA outline ouro — menos “marketing”, mais Operate.
+          Ícones só nas linhas densas (Serviços). Bom se o header já estiver ouro-pesado.
+        </p>
+      </article>
+
+      <!-- C -->
+      <article class="pick glass rounded-2xl p-5 cursor-pointer transition-colors" data-pick="C" onclick="selectPick(this)">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-[10px] tracking-widest uppercase font-bold text-gold">C · Metal Press</span>
+        </div>
+        <div class="space-y-4 min-h-[140px]">
+          <button class="inline-flex items-center gap-2 rounded-[14px] font-bold text-[13px] tracking-wide uppercase h-[48px] px-5 text-bg
+            bg-gold border border-white/10
+            shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_14px_rgba(0,0,0,0.35)]">
+            <span class="material-symbols-outlined text-[18px]">add</span> Novo barbeiro
+          </button>
+          <div class="flex gap-2 border-t border-white/5 pt-3">
+            <button class="flex-1 h-9 rounded-[10px] text-[12px] font-semibold text-mist border border-white/10 hover:border-gold/40 hover:text-gold">
+              Editar
+            </button>
+            <button class="flex-1 h-9 rounded-[10px] text-[12px] font-semibold text-mist/70 border border-white/8 hover:border-error/40 hover:text-error">
+              Remover
+            </button>
+          </div>
+        </div>
+        <p class="text-xs text-mist mt-4 leading-relaxed">
+          Highlight interno (metal prensado) + label uppercase.
+          Secundários com hairline — mais tátil, menos ghost invisível.
+        </p>
+      </article>
+    </div>
+
+    <!-- Contexto em card -->
+    <section class="glass rounded-2xl p-6">
+      <h2 class="font-display text-lg font-semibold mb-1">No contexto (Equipe)</h2>
+      <p class="text-xs text-mist mb-5">Como a direção A fica dentro do card — para você julgar hierarquia, não só o botão isolado.</p>
+      <article class="glass rounded-[14px] p-4 max-w-md">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-deep border border-white/10 text-gold-bright flex items-center justify-center font-bold text-lg shrink-0">M</div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <h3 class="font-semibold text-[15px]">Murilo</h3>
+              <span class="text-[10px] tracking-wider uppercase font-bold text-[#4CAF50] px-2 py-0.5 rounded-full bg-[#4CAF50]/10 border border-[#4CAF50]/20">Ativo</span>
+            </div>
+            <p class="text-[12px] text-mist/80 mt-0.5">Barba</p>
+          </div>
+        </div>
+        <div class="mt-3 pt-3 border-t border-white/5 flex items-center justify-end gap-3">
+          <button class="text-[12px] font-semibold text-mist hover:text-gold">Editar</button>
+          <span class="text-white/15 text-xs">·</span>
+          <button class="text-[12px] font-semibold text-mist/50 hover:text-error">Remover</button>
+        </div>
+      </article>
+      <div class="mt-5 flex flex-wrap items-center gap-3">
+        <span class="text-[11px] text-mist uppercase tracking-wider">Header CTA →</span>
+        <button class="inline-flex items-center gap-2.5 rounded-[14px] font-bold text-[14px] h-[52px] px-6 text-bg
+          bg-gradient-to-b from-gold-bright to-gold-deep
+          shadow-[0_8px_22px_rgba(212,175,55,0.22)]">
+          <span class="material-symbols-outlined text-[20px]">add</span> Novo barbeiro
+        </button>
+      </div>
+    </section>
+
+    <section id="choice" class="rounded-2xl border border-gold/30 bg-gold/5 p-5 text-sm text-mist">
+      Clique em <strong class="text-white">A, B ou C</strong> — depois diga no chat qual aplicar (ex.: “aplica a A”).
+    </section>
+  </main>
+
+  <script>
+    function selectPick(el) {
+      document.querySelectorAll('.pick').forEach((p) => p.classList.remove('selected'));
+      el.classList.add('selected');
+      const id = el.dataset.pick;
+      const names = { A: 'Atelier Peak', B: 'Ink Edge', C: 'Metal Press' };
+      document.getElementById('choice').innerHTML =
+        'Selecionado: <strong class="text-gold">Direção ' + id + ' · ' + names[id] +
+        '</strong> — diga no chat <em class="text-white">“aplica a ' + id + '”</em> para eu levar isso ao Flutter.';
+    }
+  </script>
+</body>
+</html>

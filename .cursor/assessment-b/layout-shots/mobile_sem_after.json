@@ -1,0 +1,194 @@
+[
+  {
+    "tag": "FLT-SEMANTICS",
+    "role": null,
+    "label": null,
+    "text": "Barbearia\nEntre para reservar seu horário\nContinuar com o Google\nou\nEntrar\nNovo ",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    }
+  },
+  {
+    "tag": "FLT-SEMANTICS",
+    "role": null,
+    "label": null,
+    "text": "Barbearia\nEntre para reservar seu horário\nContinuar com o Google\nou\nEntrar\nNovo ",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    }
+  },
+  {
+    "tag": "FLT-SEMANTICS",
+    "role": null,
+    "label": null,
+    "text": "Barbearia\nEntre para reservar seu horário\nContinuar com o Google\nou\nEntrar\nNovo ",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    }
+  },
+  {
+    "tag": "FLT-SEMANTICS",
+    "role": null,
+    "label": null,
+    "text": "Barbearia\nEntre para reservar seu horário\nContinuar com o Google\nou\nEntrar\nNovo ",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    }
+  },
+  {
+    "tag": "FLT-SEMANTICS",
+    "role": "group",
+    "label": null,
+    "text": "Barbearia\nEntre para reservar seu horário\nContinuar com o Google\nou\nEntrar\nNovo ",
+    "rect": {
+      "x": 0,
+      "y": 101,
+      "w": 390,
+      "h": 643
+    }
+  },
+  {
+    "tag": "FLT-SEMANTICS",
+    "role": null,
+    "label": null,
+    "text": "Barbearia",
+    "rect": {
+      "x": 127,
+      "y": 217,
+      "w": 136,
+      "h": 40
+    }
+  },
+  {
+    "tag": "FLT-SEMANTICS",
+    "role": null,
+    "label": null,
+    "text": "Entre para reservar seu horário",
+    "rect": {
+      "x": 89,
+      "y": 265,
+      "w": 213,
+      "h": 20
+    }
+  },
+  {
+    "tag": "FLT-SEMANTICS",
+    "role": "button",
+    "label": null,
+    "text": "Continuar com o Google",
+    "rect": {
+      "x": 20,
+      "y": 325,
+      "w": 350,
+      "h": 51
+    }
+  },
+  {
+    "tag": "FLT-SEMANTICS",
+    "role": null,
+    "label": null,
+    "text": "ou",
+    "rect": {
+      "x": 188,
+      "y": 404,
+      "w": 15,
+      "h": 17
+    }
+  },
+  {
+    "tag": "FLT-SEMANTICS",
+    "role": null,
+    "label": null,
+    "text": "",
+    "rect": {
+      "x": 20,
+      "y": 449,
+      "w": 350,
+      "h": 48
+    }
+  },
+  {
+    "tag": "INPUT",
+    "role": null,
+    "label": "E-mail",
+    "text": "",
+    "rect": {
+      "x": 20,
+      "y": 449,
+      "w": 358,
+      "h": 54
+    }
+  },
+  {
+    "tag": "FLT-SEMANTICS",
+    "role": null,
+    "label": null,
+    "text": "",
+    "rect": {
+      "x": 20,
+      "y": 513,
+      "w": 350,
+      "h": 48
+    }
+  },
+  {
+    "tag": "INPUT",
+    "role": null,
+    "label": "Senha",
+    "text": "",
+    "rect": {
+      "x": 20,
+      "y": 513,
+      "w": 358,
+      "h": 54
+    }
+  },
+  {
+    "tag": "FLT-SEMANTICS",
+    "role": "button",
+    "label": null,
+    "text": "Entrar",
+    "rect": {
+      "x": 20,
+      "y": 585,
+      "w": 350,
+      "h": 52
+    }
+  },
+  {
+    "tag": "FLT-SEMANTICS",
+    "role": "button",
+    "label": null,
+    "text": "Novo por aqui? Criar conta",
+    "rect": {
+      "x": 20,
+      "y": 657,
+      "w": 350,
+      "h": 40
+    }
+  },
+  {
+    "tag": "FLT-SEMANTICS",
+    "role": null,
+    "label": null,
+    "text": "Ao continuar, você aceita os termos de uso desta barbearia.",
+    "rect": {
+      "x": 20,
+      "y": 705,
+      "w": 350,
+      "h": 15
+    }
+  }
+]

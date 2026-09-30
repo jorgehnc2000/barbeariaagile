@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barbearia Agile | Financeiro — Preview</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            background: "#121212",
+            surface: "#1E1E1E",
+            "surface-high": "#2A2A2A",
+            border: "#2A2A2A",
+            primary: "#D4AF37",
+            "primary-bright": "#FFB300",
+            "on-surface": "#FFFFFF",
+            muted: "#777777",
+            "text-secondary": "#999999",
+            success: "#4CAF50",
+            error: "#E53935",
+          },
+          fontFamily: {
+            display: ["Sora", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.filled {
+      font-variation-settings: "FILL" 1;
+    }
+    body { font-family: Inter, sans-serif; }
+    h1, h2, h3 { font-family: Sora, sans-serif; }
+    .gold-glow { box-shadow: 0 0 24px rgba(212, 175, 55, 0.22); }
+    .bar { transition: height 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+  </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen pb-28">
+  <!-- Simula o header do AdminShell atual -->
+  <header class="sticky top-0 z-50 bg-[#1E1E1E] border-b border-border flex items-center justify-between px-4 md:px-8 h-16">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-[20px]">content_cut</span>
+      </div>
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-muted font-semibold">Admin · Moura</p>
+        <h1 class="text-lg font-bold tracking-tight">Financeiro</h1>
+      </div>
+    </div>
+    <div class="flex items-center gap-3 text-sm text-text-secondary">
+      <span class="hidden md:inline">jorgehnc2000@gmail.com</span>
+      <span class="material-symbols-outlined text-primary cursor-pointer">notifications</span>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 md:px-16 py-8 space-y-8">
+  <!-- Badge preview -->
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-semibold">
+    <span class="material-symbols-outlined text-[16px]">visibility</span>
+    Preview — dados simulados com base no dashboard/relatórios atuais
+  </div>
+
+  <!-- Hero: saldo + CTA (como no mock Heritage & Steel) -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 relative overflow-hidden bg-surface rounded-2xl border border-border p-6 gold-glow">
+      <div class="absolute -top-20 -right-20 w-56 h-56 bg-primary/5 rounded-full blur-3xl"></div>
+      <div class="relative z-10">
+        <p class="text-xs uppercase tracking-widest text-muted mb-1">Saldo do mês (confirmado)</p>
+        <h2 class="text-4xl md:text-5xl font-extrabold text-primary tracking-tight">R$ 1.240,00</h2>
+        <p class="text-sm text-text-secondary mt-2">Mesmo dado de <strong>Faturamento total</strong> em Relatórios</p>
+        <div class="grid grid-cols-2 gap-6 mt-8">
+          <div>
+            <div class="flex items-center gap-2 text-success text-sm font-semibold">
+              <span class="material-symbols-outlined text-[18px]">trending_up</span>
+              Receita
+            </div>
+            <p class="text-2xl font-bold mt-1">+ R$ 1.240,00</p>
+            <p class="text-xs text-muted">18 atendimentos no mês</p>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 text-error text-sm font-semibold">
+              <span class="material-symbols-outlined text-[18px]">trending_down</span>
+              Despesas <span class="text-[10px] font-normal text-muted">(futuro)</span>
+            </div>
+            <p class="text-2xl font-bold mt-1">—</p>
+            <p class="text-xs text-muted">Módulo ainda não no app</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="bg-[#1a1a1a] border border-border rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-4 hover:border-primary/40 transition-all active:scale-[0.98] group cursor-pointer">
+      <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[#FFB300] to-[#B8962E] flex items-center justify-center gold-glow group-hover:scale-105 transition-transform">
+        <span class="material-symbols-outlined text-background text-3xl font-bold">add</span>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold">Lançar fluxo</h3>
+        <p class="text-sm text-text-secondary mt-1 px-2">Receita manual, despesa ou ajuste de caixa.</p>
+      </div>
+    </button>
+  </section>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Transações = agendamentos confirmados -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold">Receitas recentes</h3>
+        <button class="text-primary text-sm font-semibold hover:underline">Ver todas</button>
+      </div>
+      <div class="space-y-3">
+        <article class="bg-surface rounded-xl p-4 border border-border flex items-center justify-between hover:bg-surface-high transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-background border border-border flex items-center justify-center text-muted">
+              <span class="material-symbols-outlined">content_cut</span>
+            </div>
+            <div>
+              <p class="font-semibold text-sm">Corte + Barba</p>
+              <p class="text-xs text-muted">Hoje, 14:30 · João · PIX</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="font-bold text-success text-sm">+ R$ 85,00</p>
+            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-success/10 text-success">Pago</span>
+          </div>
+        </article>
+        <article class="bg-surface rounded-xl p-4 border border-border flex items-center justify-between hover:bg-surface-high transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-background border border-border flex items-center justify-center text-muted">
+              <span class="material-symbols-outlined">workspace_premium</span>
+            </div>
+            <div>
+              <p class="font-semibold text-sm">Clube VIP — mensalidade</p>
+              <p class="text-xs text-muted">Hoje, 09:12 · Mercado Pago</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="font-bold text-primary text-sm">+ R$ 49,90</p>
+            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary">VIP</span>
+          </div>
+        </article>
+        <article class="bg-surface rounded-xl p-4 border border-border flex items-center justify-between hover:bg-surface-high transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-background border border-border flex items-center justify-center text-muted">
+              <span class="material-symbols-outlined">payments</span>
+            </div>
+            <div>
+              <p class="font-semibold text-sm">Corte social</p>
+              <p class="text-xs text-muted">Ontem, 18:45 · Dinheiro</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="font-bold text-success text-sm">+ R$ 50,00</p>
+            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-success/10 text-success">Pago</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Despesas = placeholder futuro -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold">Despesas da unidade</h3>
+        <button class="text-primary text-sm font-semibold hover:underline">Gerenciar</button>
+      </div>
+      <div class="space-y-3 opacity-80">
+        <article class="bg-surface rounded-xl p-4 border border-dashed border-border flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-background border border-border flex items-center justify-center text-error">
+              <span class="material-symbols-outlined">store</span>
+            </div>
+            <div>
+              <p class="font-semibold text-sm">Aluguel</p>
+              <p class="text-xs text-muted">Exemplo — não conectado ao Supabase</p>
+            </div>
+          </div>
+          <p class="font-bold text-sm">R$ 2.500,00</p>
+        </article>
+        <article class="bg-surface rounded-xl p-4 border border-dashed border-border flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-background border border-border flex items-center justify-center text-error">
+              <span class="material-symbols-outlined">bolt</span>
+            </div>
+            <div>
+              <p class="font-semibold text-sm">Energia</p>
+              <p class="text-xs text-muted">Exemplo visual</p>
+            </div>
+          </div>
+          <p class="font-bold text-sm">R$ 480,00</p>
+        </article>
+      </div>
+      <p class="text-xs text-muted text-center pt-2">Hoje o app só calcula receita via agendamentos + VIP.</p>
+    </section>
+  </div>
+
+  <!-- Gráfico semanal — mesmo conceito do AdminWeeklyRevenueChart -->
+  <section class="bg-[#1a1a1a] rounded-2xl border border-border p-6">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+      <div>
+        <h3 class="text-xl font-bold">Desempenho semanal</h3>
+        <p class="text-sm text-text-secondary">Reutiliza o gráfico de Faturamento da semana do Dashboard</p>
+      </div>
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs font-bold">
+        <span class="material-symbols-outlined text-[14px]">trending_up</span>
+        Pico: Ter
+      </div>
+    </div>
+    <p class="text-3xl font-extrabold text-on-surface mb-1">R$ 50,00</p>
+    <p class="text-xs text-muted mb-6">total nos últimos 7 dias</p>
+    <div class="h-40 flex items-end justify-between gap-2 md:gap-4 px-1">
+      <!-- Dom -->
+      <div class="flex flex-col items-center flex-1 gap-2">
+        <div class="w-7 h-1.5 rounded-full bg-border"></div>
+        <span class="text-[10px] text-muted">Dom</span>
+      </div>
+      <!-- Seg -->
+      <div class="flex flex-col items-center flex-1 gap-2">
+        <div class="w-7 h-1.5 rounded-full bg-border"></div>
+        <span class="text-[10px] text-muted">Seg</span>
+      </div>
+      <!-- Ter (pico) -->
+      <div class="flex flex-col items-center flex-1 gap-2">
+        <span class="text-[10px] text-primary font-bold">50</span>
+        <div class="w-7 bar rounded-lg bg-gradient-to-t from-[#B8962E] to-[#FFB300] gold-glow" style="height: 100%"></div>
+        <span class="text-[10px] text-on-surface font-bold">Ter</span>
+        <span class="w-1 h-1 rounded-full bg-primary"></span>
+      </div>
+      <!-- Qua-Sab -->
+      <div class="flex flex-col items-center flex-1 gap-2"><div class="w-7 h-1.5 rounded-full bg-border"></div><span class="text-[10px] text-muted">Qua</span></div>
+      <div class="flex flex-col items-center flex-1 gap-2"><div class="w-7 h-1.5 rounded-full bg-border"></div><span class="text-[10px] text-muted">Qui</span></div>
+      <div class="flex flex-col items-center flex-1 gap-2"><div class="w-7 h-1.5 rounded-full bg-border"></div><span class="text-[10px] text-muted">Sex</span></div>
+      <div class="flex flex-col items-center flex-1 gap-2"><div class="w-7 h-1.5 rounded-full bg-border"></div><span class="text-[10px] text-muted">Sáb</span></div>
+    </div>
+  </section>
+
+  <!-- Mapeamento: o que já existe vs novo -->
+  <section class="bg-surface rounded-2xl border border-border p-6">
+    <h3 class="text-lg font-bold mb-4">O que aproveitar do app hoje</h3>
+    <div class="grid md:grid-cols-2 gap-4 text-sm">
+      <div class="p-4 rounded-xl bg-background border border-border">
+        <p class="text-primary font-semibold mb-2">✓ Já existe</p>
+        <ul class="space-y-1 text-text-secondary list-disc pl-4">
+          <li>Faturamento do mês (Dashboard)</li>
+          <li>Gráfico semanal (AdminWeeklyRevenueChart)</li>
+          <li>Ranking por barbeiro (Relatórios)</li>
+          <li>MRR Clube VIP</li>
+          <li>Tema escuro + ouro (#D4AF37)</li>
+        </ul>
+      </div>
+      <div class="p-4 rounded-xl bg-background border border-dashed border-primary/30">
+        <p class="text-primary font-semibold mb-2">+ Novo módulo</p>
+        <ul class="space-y-1 text-text-secondary list-disc pl-4">
+          <li>Lançamento manual de receita/despesa</li>
+          <li>Lista de transações com status</li>
+          <li>Saldo consolidado receita − despesa</li>
+          <li>Gráfico receita vs despesa</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  </main>
+
+  <!-- Simula bottom nav do admin mobile -->
+  <nav class="fixed bottom-0 left-0 w-full z-50 bg-[#1E1E1E] border-t border-border flex justify-around items-center px-2 pb-4 pt-2">
+    <div class="flex flex-col items-center text-muted text-[10px] gap-0.5"><span class="material-symbols-outlined text-[22px]">home</span>Início</div>
+    <div class="flex flex-col items-center text-muted text-[10px] gap-0.5"><span class="material-symbols-outlined text-[22px]">calendar_month</span>Agenda</div>
+    <div class="flex flex-col items-center text-primary font-bold text-[10px] gap-0.5 bg-primary/10 rounded-xl px-3 py-1">
+      <span class="material-symbols-outlined filled text-[22px]">payments</span>Financeiro
+    </div>
+    <div class="flex flex-col items-center text-muted text-[10px] gap-0.5"><span class="material-symbols-outlined text-[22px]">insights</span>Relatórios</div>
+    <div class="flex flex-col items-center text-muted text-[10px] gap-0.5"><span class="material-symbols-outlined text-[22px]">menu</span>Menu</div>
+  </nav>
+</body>
+</html>

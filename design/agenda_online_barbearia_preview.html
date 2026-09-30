@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barbearia Agile | Agenda Online — Preview</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400..900;1,400..900&family=Hanken+Grotesk:wght@100..900&family=Metrophobic&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#c9c6c5",
+            "on-secondary": "#3c2f00",
+            "on-surface-variant": "#c4c7c7",
+            "on-background": "#e2e2e2",
+            outline: "#8e9192",
+            "surface-variant": "#333535",
+            "secondary-fixed-dim": "#D4AF37",
+            "surface-container-low": "#1a1c1c",
+            "surface-container-highest": "#333535",
+            "outline-variant": "#444748",
+            surface: "#121414",
+            "on-surface": "#e2e2e2",
+            "surface-container-high": "#282a2b",
+            "secondary-fixed": "#ffe088",
+            secondary: "#D4AF37",
+            "secondary-container": "#af8d11",
+            "on-secondary-container": "#342800",
+            background: "#0a0a0a",
+            success: "#4CAF50",
+            muted: "#777777",
+          },
+          spacing: {
+            "margin-mobile": "20px",
+            "margin-desktop": "64px",
+          },
+          fontFamily: {
+            "label-sm": ["Metrophobic", "sans-serif"],
+            "headline-lg-mobile": ["Bodoni Moda", "serif"],
+            "label-caps": ["Metrophobic", "sans-serif"],
+            "body-md": ["Hanken Grotesk", "sans-serif"],
+            "headline-md": ["Bodoni Moda", "serif"],
+          },
+          fontSize: {
+            "label-sm": ["11px", { lineHeight: "14px", letterSpacing: "0.1em", fontWeight: "400" }],
+            "headline-lg-mobile": ["32px", { lineHeight: "38px", fontWeight: "600" }],
+            "label-caps": ["12px", { lineHeight: "16px", letterSpacing: "0.15em", fontWeight: "400" }],
+            "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+            "headline-md": ["24px", { lineHeight: "32px", fontWeight: "500" }],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .glass-card {
+      background: rgba(18, 20, 20, 0.4);
+      backdrop-filter: blur(20px);
+      border: 0.5px solid rgba(255, 255, 255, 0.1);
+    }
+    .active-gold-glow {
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+    }
+    .material-symbols-outlined {
+      font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 24;
+    }
+    .material-symbols-outlined.filled {
+      font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+    }
+    ::-webkit-scrollbar { display: none; }
+    body { font-family: "Hanken Grotesk", sans-serif; }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-secondary selection:text-on-secondary min-h-screen pb-32">
+
+  <!-- AdminShell header (como no app Flutter) -->
+  <header id="top-header" class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 bg-surface/80 backdrop-blur-xl border-b-[0.5px] border-outline-variant/20 transition-shadow">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-secondary/15 border border-secondary/30 flex items-center justify-center">
+        <span class="material-symbols-outlined text-secondary text-[20px]">content_cut</span>
+      </div>
+      <div>
+        <p class="font-label-caps text-[10px] tracking-[0.2em] text-on-surface-variant/70 uppercase">Admin · Moura</p>
+        <h1 class="font-headline-md text-lg leading-tight text-on-surface">Agenda Online</h1>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="hidden md:inline text-sm text-on-surface-variant/70">jorgehnc2000@gmail.com</span>
+      <div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant/30 bg-surface-container-high flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-[20px]">person</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="pt-20 pb-8 px-margin-mobile md:px-margin-desktop max-w-3xl mx-auto">
+
+    <!-- Preview badge -->
+    <div class="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 border border-secondary/30 text-secondary text-xs font-semibold">
+      <span class="material-symbols-outlined text-[16px]">visibility</span>
+      Preview — dados simulados no schema <code class="text-[10px]">AdminAgendaBooking</code>
+    </div>
+
+    <!-- Header: título + mês (equiv. AdminPageHeader + _AgendaToolbar) -->
+    <section class="mb-6 flex items-start justify-between gap-4">
+      <div>
+        <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-1">Agenda</h2>
+        <p id="subtitle" class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2">
+          Segunda-feira · 3 na fila
+        </p>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button id="month-picker" type="button" class="flex items-center gap-1 text-secondary font-semibold text-sm hover:text-secondary-fixed transition-colors">
+          <span id="month-label">JULHO DE 2026</span>
+          <span class="material-symbols-outlined text-[18px]">expand_more</span>
+        </button>
+        <button type="button" class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-lg active:scale-95 transition-transform" title="Novo agendamento (_openNewBooking)">
+          <span class="material-symbols-outlined">add</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Week strip (_WeekStrip: Dom–Sáb) -->
+    <section class="mb-8 -mx-margin-mobile px-margin-mobile overflow-x-auto">
+      <div id="week-strip" class="flex gap-3 pb-2 min-w-max md:min-w-0"></div>
+    </section>
+
+    <!-- Barber filters (_BarberFilterRow) -->
+    <section class="mb-8">
+      <h3 class="font-label-caps text-label-caps text-on-surface-variant/80 mb-4 tracking-widest uppercase">Barbeiros</h3>
+      <div id="barber-filters" class="flex flex-wrap gap-3"></div>
+    </section>
+
+    <!-- Lista por período (_PeriodListView) -->
+    <section id="agenda-list" class="space-y-8"></section>
+
+    <!-- Mapeamento app ↔ mock -->
+    <section class="mt-12 glass-card rounded-xl p-6">
+      <h3 class="font-headline-md text-headline-md mb-4">O que já existe vs. o mock</h3>
+      <div class="grid md:grid-cols-2 gap-4 text-sm">
+        <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/20">
+          <p class="text-secondary font-semibold mb-2">✓ Já no Flutter (<code>agenda_online_page.dart</code>)</p>
+          <ul class="space-y-1 text-on-surface-variant list-disc pl-4">
+            <li><code>AdminService.fetchAdminAgenda(day)</code></li>
+            <li>Faixa semanal Dom–Sáb + seletor de mês</li>
+            <li>Chips Todos + barbeiros do roster</li>
+            <li>Lista Manhã / Tarde / Noite ou colunas (desktop)</li>
+            <li>Status: Confirmado, Pendente, Cancelado</li>
+            <li>FAB / dialog novo agendamento balcão</li>
+            <li>Bottom sheet detalhes + confirmar/cancelar</li>
+          </ul>
+        </div>
+        <div class="p-4 rounded-xl bg-surface-container-low border border-dashed border-secondary/30">
+          <p class="text-secondary font-semibold mb-2">+ Do mock Estate Barber</p>
+          <ul class="space-y-1 text-on-surface-variant list-disc pl-4">
+            <li>Glass morphism nos cards</li>
+            <li>Tipografia Bodoni + Hanken Grotesk</li>
+            <li>Card “Slot Disponível” entre horários</li>
+            <li>Glow dourado no dia ativo</li>
+            <li>Email do cliente no card (hoje só nome)</li>
+            <li>Menu <code>more_horiz</code> por agendamento</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FAB (_openNewBooking) -->
+  <button type="button" class="fixed bottom-24 right-6 w-14 h-14 bg-secondary text-on-secondary rounded-full flex items-center justify-center shadow-2xl active:scale-95 transition-transform z-40" title="Novo agendamento">
+    <span class="material-symbols-outlined">add</span>
+  </button>
+
+  <!-- Bottom nav (_AdminBottomNav) -->
+  <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface-container-low/90 backdrop-blur-lg border-t-[0.5px] border-outline-variant/20 rounded-t-xl max-w-3xl left-1/2 -translate-x-1/2">
+    <div class="flex flex-col items-center text-on-surface-variant/60 text-[10px] gap-0.5">
+      <span class="material-symbols-outlined text-[22px]">home</span>Início
+    </div>
+    <div class="flex flex-col items-center text-secondary font-bold text-[10px] gap-0.5 scale-105">
+      <span class="material-symbols-outlined filled text-[22px]">calendar_month</span>Agenda
+    </div>
+    <div class="flex flex-col items-center text-on-surface-variant/60 text-[10px] gap-0.5">
+      <span class="material-symbols-outlined text-[22px]">workspace_premium</span>VIP
+    </div>
+    <div class="flex flex-col items-center text-on-surface-variant/60 text-[10px] gap-0.5">
+      <span class="material-symbols-outlined text-[22px]">menu</span>Menu
+    </div>
+  </nav>
+
+  <script>
+    /**
+     * Schema idêntico a lib/models/admin_agenda_booking.dart
+     * status: "Confirmado" | "Pendente" | "Cancelado" (cancelados não aparecem na agenda)
+     */
+    const BARBERS = [
+      { id: "b1", name: "Murilo" },
+      { id: "b2", name: "Jorge" },
+    ];
+
+    const BOOKINGS = [
+      {
+        id: "a1",
+        clientName: "Jorge Nascimento",
+        clientPhotoUrl: "",
+        clientPhone: "(11) 98765-4321",
+        clientEmail: "jorge.nascimento@cast.com.br",
+        barberId: "b1",
+        barberName: "Murilo",
+        barberPhotoUrl: "",
+        serviceName: "Corte Social",
+        price: 50,
+        dateTime: "2026-07-27T10:00:00",
+        durationMinutes: 30,
+        status: "Confirmado",
+      },
+      {
+        id: "a2",
+        clientName: "Carlos Mendes",
+        clientPhotoUrl: "",
+        clientPhone: "",
+        clientEmail: "carlos.mendes@gmail.com",
+        barberId: "b1",
+        barberName: "Murilo",
+        barberPhotoUrl: "",
+        serviceName: "Corte & Barba",
+        price: 85,
+        dateTime: "2026-07-27T14:00:00",
+        durationMinutes: 30,
+        status: "Confirmado",
+      },
+      {
+        id: "a3",
+        clientName: "Felipe Azevedo",
+        clientPhotoUrl: "",
+        clientPhone: "(21) 99876-5432",
+        clientEmail: "felipe.azevedo@ux.com",
+        barberId: "b2",
+        barberName: "Jorge",
+        barberPhotoUrl: "",
+        serviceName: "Modelagem de Barba",
+        price: 65,
+        dateTime: "2026-07-27T16:00:00",
+        durationMinutes: 45,
+        status: "Pendente",
+      },
+      {
+        id: "a4",
+        clientName: "Ana Paula",
+        clientPhotoUrl: "",
+        clientPhone: "",
+        clientEmail: "ana@email.com",
+        barberId: "b2",
+        barberName: "Jorge",
+        barberPhotoUrl: "",
+        serviceName: "Corte Feminino",
+        price: 70,
+        dateTime: "2026-07-28T11:00:00",
+        durationMinutes: 45,
+        status: "Confirmado",
+      },
+    ];
+
+    const WEEKDAY_SHORT = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
+    const WEEKDAY_LONG = [
+      "Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira",
+      "Quinta-feira", "Sexta-feira", "Sábado",
+    ];
+    const MONTHS_PT = [
+      "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO",
+      "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO",
+    ];
+
+    let selectedDay = new Date(2026, 6, 27); // Seg 27 Jul 2026
+    let selectedBarberKey = "__all__";
+
+    function sameDay(a, b) {
+      return a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate();
+    }
+
+    function weekStart(day) {
+      const d = new Date(day);
+      d.setDate(d.getDate() - (d.getDay()));
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+
+    function formatTime(iso) {
+      const d = new Date(iso);
+      return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function formatTimeRange(booking) {
+      const start = new Date(booking.dateTime);
+      const mins = booking.durationMinutes > 0 ? booking.durationMinutes : 45;
+      const end = new Date(start.getTime() + mins * 60000);
+      return `${formatTime(start)} – ${formatTime(end)}`;
+    }
+
+    function truncateEmail(email) {
+      if (!email) return "—";
+      if (email.length <= 22) return email;
+      return email.slice(0, 20) + "…";
+    }
+
+    function formatPrice(value) {
+      return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function statusBadge(status) {
+      if (status === "Confirmado") {
+        return `<span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-950/30 text-green-400 text-[10px] font-label-caps border border-green-500/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>CONFIRMADO</span>`;
+      }
+      if (status === "Pendente") {
+        return `<span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-[10px] font-label-caps border border-secondary/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>PENDENTE</span>`;
+      }
+      return `<span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-950/30 text-red-400 text-[10px] font-label-caps border border-red-500/20">CANCELADO</span>`;
+    }
+
+    function bookingsForDay(day) {
+      return BOOKINGS.filter((b) => sameDay(new Date(b.dateTime), day))
+        .filter((b) => selectedBarberKey === "__all__" || b.barberId === selectedBarberKey)
+        .sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+    }
+
+    function renderWeekStrip() {
+      const start = weekStart(selectedDay);
+      const container = document.getElementById("week-strip");
+      container.innerHTML = "";
+
+      for (let i = 0; i < 7; i++) {
+        const day = new Date(start);
+        day.setDate(start.getDate() + i);
+        const active = sameDay(day, selectedDay);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = active
+          ? "flex flex-col items-center justify-center min-w-[72px] h-[92px] bg-secondary-container text-on-secondary-container rounded-xl transition-all duration-300 active-gold-glow border border-secondary/30"
+          : "flex flex-col items-center justify-center min-w-[72px] h-[92px] glass-card rounded-xl transition-all duration-300 border-outline-variant/20 hover:border-secondary/30";
+        btn.innerHTML = `
+          <span class="font-label-sm text-label-sm ${active ? "font-bold" : "text-on-surface-variant/60"} mb-1">${WEEKDAY_SHORT[i]}</span>
+          <span class="font-headline-md text-headline-md ${active ? "font-bold" : ""}">${day.getDate()}</span>
+        `;
+        btn.addEventListener("click", () => {
+          selectedDay = new Date(day);
+          render();
+        });
+        container.appendChild(btn);
+      }
+    }
+
+    function renderBarberFilters() {
+      const container = document.getElementById("barber-filters");
+      const chips = [{ key: "__all__", label: "TODOS" }, ...BARBERS.map((b) => ({ key: b.id, label: b.name.toUpperCase() }))];
+      container.innerHTML = chips.map((chip) => {
+        const active = selectedBarberKey === chip.key;
+        return `<button type="button" data-key="${chip.key}" class="barber-chip px-6 py-2 rounded-full font-label-sm text-label-sm transition-all duration-300 ${
+          active
+            ? "bg-secondary text-on-secondary"
+            : "glass-card text-on-surface-variant hover:border-secondary/40"
+        }">${chip.label}</button>`;
+      }).join("");
+
+      container.querySelectorAll(".barber-chip").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          selectedBarberKey = btn.dataset.key;
+          render();
+        });
+      });
+    }
+
+    function renderBookingCard(booking) {
+      const clientLine = booking.clientEmail
+        ? truncateEmail(booking.clientEmail)
+        : booking.clientName;
+      const subline = booking.clientEmail
+        ? (booking.clientPhone ? `Tel. ${booking.clientPhone}` : "Agendado via App")
+        : booking.clientName;
+
+      return `
+        <article class="glass-card rounded-xl p-6 relative overflow-hidden group transition-all duration-500 hover:border-secondary/30 cursor-pointer" data-id="${booking.id}">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <p class="font-label-caps text-[10px] text-secondary tracking-widest mb-1">${booking.barberName.toUpperCase()}</p>
+              <h4 class="font-headline-md text-headline-md leading-tight">${booking.serviceName}</h4>
+              <p class="text-[11px] text-on-surface-variant/50 mt-1">${formatPrice(booking.price)}</p>
+            </div>
+            <div class="text-right">
+              <span class="font-headline-md text-headline-md text-secondary">${formatTime(booking.dateTime)}</span>
+              <p class="text-[10px] font-label-sm text-on-surface-variant/60">${booking.durationMinutes} MIN</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 py-4 border-y border-outline-variant/10 mb-4">
+            <div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-outline-variant/20 overflow-hidden">
+              ${booking.clientPhotoUrl
+                ? `<img src="${booking.clientPhotoUrl}" alt="" class="w-full h-full object-cover" />`
+                : `<span class="material-symbols-outlined text-[18px] text-primary">person</span>`}
+            </div>
+            <div class="min-w-0">
+              <p class="font-body-md text-on-surface truncate">${clientLine}</p>
+              <p class="text-[12px] text-on-surface-variant/60 truncate">${subline}</p>
+            </div>
+          </div>
+          <div class="flex justify-between items-center">
+            ${statusBadge(booking.status)}
+            <button type="button" class="text-on-surface-variant/40 hover:text-secondary transition-colors" title="Detalhes (_showBookingDetails)">
+              <span class="material-symbols-outlined">more_horiz</span>
+            </button>
+          </div>
+          <div class="absolute top-0 right-0 w-32 h-32 bg-secondary/5 blur-[60px] pointer-events-none group-hover:bg-secondary/10 transition-all"></div>
+        </article>
+      `;
+    }
+
+    function renderEmptySlot(timeLabel) {
+      return `
+        <article class="border-[0.5px] border-dashed border-outline-variant/30 rounded-xl p-6 flex items-center justify-between group cursor-pointer hover:bg-surface-container-low/40 transition-colors" title="Preview — slot livre (não existe no app hoje)">
+          <div class="flex gap-6 items-center">
+            <span class="font-headline-md text-headline-md text-on-surface-variant/30">${timeLabel}</span>
+            <div>
+              <h4 class="font-body-md text-on-surface-variant/40 italic">Slot Disponível</h4>
+              <p class="font-label-sm text-[10px] text-on-surface-variant/20 uppercase tracking-widest">Qualquer Barbeiro</p>
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-full border border-outline-variant/20 flex items-center justify-center group-hover:border-secondary transition-colors">
+            <span class="material-symbols-outlined text-on-surface-variant/40 group-hover:text-secondary">add</span>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderAgendaList() {
+      const list = document.getElementById("agenda-list");
+      const dayBookings = bookingsForDay(selectedDay);
+
+      document.getElementById("subtitle").textContent =
+        `${WEEKDAY_LONG[selectedDay.getDay()]} · ${dayBookings.length} na fila`;
+
+      document.getElementById("month-label").textContent =
+        `${MONTHS_PT[selectedDay.getMonth()]} DE ${selectedDay.getFullYear()}`;
+
+      if (dayBookings.length === 0) {
+        list.innerHTML = `
+          <div class="glass-card rounded-xl p-10 text-center">
+            <span class="material-symbols-outlined text-4xl text-on-surface-variant/30 mb-3">event_available</span>
+            <p class="text-on-surface-variant">Nenhum agendamento para esta data.</p>
+            <p class="text-xs text-on-surface-variant/50 mt-2">Mesma mensagem de <code>_AgendaMessage</code> no Flutter</p>
+          </div>
+        `;
+        return;
+      }
+
+      const morning = dayBookings.filter((b) => new Date(b.dateTime).getHours() < 12);
+      const afternoon = dayBookings.filter((b) => {
+        const h = new Date(b.dateTime).getHours();
+        return h >= 12 && h < 18;
+      });
+      const evening = dayBookings.filter((b) => new Date(b.dateTime).getHours() >= 18);
+
+      function periodBlock(label, items, showGapAfterIndex) {
+        if (!items.length) return "";
+        let html = `<div><p class="font-label-caps text-[11px] text-on-surface-variant/60 tracking-widest mb-3">${label}</p><div class="space-y-4">`;
+        items.forEach((booking, idx) => {
+          html += renderBookingCard(booking);
+          // Slot visual entre 14:00 e 16:00 no dia 27 (mock Estate Barber)
+          if (showGapAfterIndex === idx && sameDay(selectedDay, new Date(2026, 6, 27))) {
+            html += renderEmptySlot("15:00");
+          }
+        });
+        html += "</div></div>";
+        return html;
+      }
+
+      const afternoonWithGap = afternoon.findIndex((b) => b.id === "a2");
+
+      list.innerHTML = [
+        periodBlock("MANHÃ", morning, -1),
+        periodBlock("TARDE", afternoon, afternoonWithGap),
+        periodBlock("NOITE", evening, -1),
+      ].filter(Boolean).join("");
+    }
+
+    function render() {
+      renderWeekStrip();
+      renderBarberFilters();
+      renderAgendaList();
+    }
+
+    document.getElementById("month-picker").addEventListener("click", () => {
+      const picked = prompt("Simula showDatePicker — digite AAAA-MM-DD:", selectedDay.toISOString().slice(0, 10));
+      if (!picked) return;
+      const next = new Date(picked + "T12:00:00");
+      if (!Number.isNaN(next.getTime())) {
+        selectedDay = next;
+        render();
+      }
+    });
+
+    window.addEventListener("scroll", () => {
+      const header = document.getElementById("top-header");
+      header.classList.toggle("shadow-lg", window.scrollY > 20);
+    });
+
+    render();
+  </script>
+</body>
+</html>

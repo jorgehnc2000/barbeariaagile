@@ -1,0 +1,104 @@
+{
+  "urls": [
+    {
+      "url": "https://barbeariaagile.vercel.app",
+      "ok": true,
+      "status": 200,
+      "title": "Barbearia Moura",
+      "bodyPreview": "",
+      "dom": {
+        "canvasCount": 0,
+        "canvasInfo": [],
+        "hasFlutterMeta": false,
+        "hasFlutterTags": true,
+        "scriptCount": 2,
+        "bodyChildTags": [
+          "flt-semantics-placeholder",
+          "script",
+          "p",
+          "flt-announcement-host",
+          "flutter-view"
+        ]
+      },
+      "isFlutterCanvas": true,
+      "screenshot": "C:\\Users\\Jorge Henrique\\Projects\\barbearia_app\\.cursor\\assessment-b\\https_barbeariaagile_vercel_app.png"
+    },
+    {
+      "url": "https://barbeariaagile.vercel.app/?slug=demo",
+      "ok": true,
+      "status": 200,
+      "title": "Barbearia Moura",
+      "bodyPreview": "",
+      "dom": {
+        "canvasCount": 0,
+        "canvasInfo": [],
+        "hasFlutterMeta": false,
+        "hasFlutterTags": true,
+        "scriptCount": 2,
+        "bodyChildTags": [
+          "flt-semantics-placeholder",
+          "script",
+          "p",
+          "flt-announcement-host",
+          "flutter-view"
+        ]
+      },
+      "isFlutterCanvas": true,
+      "screenshot": "C:\\Users\\Jorge Henrique\\Projects\\barbearia_app\\.cursor\\assessment-b\\https_barbeariaagile_vercel_app_slug_demo.png"
+    },
+    {
+      "url": "https://barbeariaagile.vercel.app/demo",
+      "ok": true,
+      "status": 200,
+      "title": "Barbearia Moura",
+      "bodyPreview": "",
+      "dom": {
+        "canvasCount": 0,
+        "canvasInfo": [],
+        "hasFlutterMeta": false,
+        "hasFlutterTags": true,
+        "scriptCount": 2,
+        "bodyChildTags": [
+          "flt-semantics-placeholder",
+          "script",
+          "p",
+          "flt-announcement-host",
+          "flutter-view"
+        ]
+      },
+      "isFlutterCanvas": true,
+      "screenshot": "C:\\Users\\Jorge Henrique\\Projects\\barbearia_app\\.cursor\\assessment-b\\https_barbeariaagile_vercel_app_demo.png"
+    },
+    {
+      "url": "https://barbeariaagile.vercel.app/sucesso-assinatura",
+      "ok": true,
+      "status": 200,
+      "title": "Barbearia Moura",
+      "bodyPreview": "",
+      "dom": {
+        "canvasCount": 0,
+        "canvasInfo": [],
+        "hasFlutterMeta": false,
+        "hasFlutterTags": true,
+        "scriptCount": 2,
+        "bodyChildTags": [
+          "flt-semantics-placeholder",
+          "script",
+          "p",
+          "flt-announcement-host",
+          "flutter-view"
+        ]
+      },
+      "isFlutterCanvas": true,
+      "screenshot": "C:\\Users\\Jorge Henrique\\Projects\\barbearia_app\\.cursor\\assessment-b\\https_barbeariaagile_vercel_app_sucesso_assinatura.png"
+    }
+  ],
+  "injectionPreflight": {
+    "mutableInjection": true
+  },
+  "detectJsInjection": {
+    "attempted": false,
+    "skipped": true,
+    "reason": "Flutter Web canvas/raster UI — DOM overlay detect.js not applicable for Assessment B"
+  }
+}

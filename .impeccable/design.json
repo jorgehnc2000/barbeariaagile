@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-24T03:50:00.000Z",
+  "title": "Design System: Barbearia App",
+  "extensions": {
+    "colorMeta": {
+      "ouro-de-atelier": {
+        "role": "primary",
+        "displayName": "Ouro de Atelier",
+        "canonical": "#D4AF37",
+        "tonalRamp": [
+          "#3D3210",
+          "#5C4A18",
+          "#7A6320",
+          "#A88B2A",
+          "#D4AF37",
+          "#E0C15E",
+          "#ECD48A",
+          "#F7E8C2"
+        ]
+      },
+      "ouro-brilho": {
+        "role": "secondary",
+        "displayName": "Ouro Brilho",
+        "canonical": "#FFB300",
+        "tonalRamp": [
+          "#4D3600",
+          "#734F00",
+          "#996900",
+          "#CC8F00",
+          "#FFB300",
+          "#FFC433",
+          "#FFD666",
+          "#FFE9B3"
+        ]
+      },
+      "carvao-meia-noite": {
+        "role": "neutral",
+        "displayName": "Carvão de Meia-Noite",
+        "canonical": "#121212",
+        "tonalRamp": [
+          "#0A0A0A",
+          "#121212",
+          "#1E1E1E",
+          "#2A2A2A",
+          "#3A3A3A",
+          "#777777",
+          "#999999",
+          "#FFFFFF"
+        ]
+      },
+      "mesa-escura": {
+        "role": "neutral",
+        "displayName": "Mesa Escura",
+        "canonical": "#1E1E1E",
+        "tonalRamp": [
+          "#0A0A0A",
+          "#121212",
+          "#1E1E1E",
+          "#2A2A2A",
+          "#3A3A3A",
+          "#555555",
+          "#999999",
+          "#E0E0E0"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero and strong greetings (Sora)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Sheet and section titles (Sora)."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Operational copy (Inter)."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons and compact UI labels (Inter)."
+      }
+    },
+    "shadows": [
+      {
+        "name": "spotlight-cta",
+        "value": "0 8px 24px rgba(212, 175, 55, 0.25)",
+        "purpose": "Soft gold-tinted lift under primary CTAs / VIP moments."
+      },
+      {
+        "name": "ambient-card",
+        "value": "0 8px 18px rgba(0, 0, 0, 0.2)",
+        "purpose": "Optional ambient depth on VIP / elevated promo cards."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "180ms",
+        "purpose": "Short state transitions (chips, segment buttons)."
+      }
+    ],
+    "breakpoints": [
+      { "name": "compact", "value": "700px" },
+      { "name": "client-desktop", "value": "900px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Gold filled CTA — confirm booking, save, primary actions.",
+      "html": "<button class=\"ds-btn-primary\">Confirmar agendamento</button>",
+      "css": ".ds-btn-primary { background: #D4AF37; color: #121212; min-height: 52px; padding: 0 24px; border: none; border-radius: 14px; font-family: Inter, system-ui, sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.18s ease, opacity 0.18s ease; } .ds-btn-primary:hover { background: #FFB300; } .ds-btn-primary:focus-visible { outline: 2px solid #FFB300; outline-offset: 2px; } .ds-btn-primary:disabled { background: rgba(212,175,55,0.35); cursor: not-allowed; }"
+    },
+    {
+      "name": "Outlined Button",
+      "kind": "button",
+      "refersTo": "button-outlined",
+      "description": "Secondary actions and cancel paths.",
+      "html": "<button class=\"ds-btn-outlined\">Cancelar</button>",
+      "css": ".ds-btn-outlined { background: transparent; color: #FFFFFF; min-height: 52px; padding: 0 24px; border: 1px solid rgba(58,58,58,0.7); border-radius: 14px; font-family: Inter, system-ui, sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; } .ds-btn-outlined:hover { border-color: #D4AF37; color: #D4AF37; } .ds-btn-outlined:focus-visible { outline: 2px solid #D4AF37; outline-offset: 2px; }"
+    },
+    {
+      "name": "Surface Card",
+      "kind": "card",
+      "refersTo": "card-surface",
+      "description": "Default elevated surface for lists, metrics, and sections.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Clube VIP</h3><p class=\"ds-card-body\">Assinatura premium com benefícios liberados.</p></div>",
+      "css": ".ds-card { background: #1E1E1E; color: #FFFFFF; border: 1px solid #2A2A2A; border-radius: 16px; padding: 16px; font-family: Inter, system-ui, sans-serif; } .ds-card-title { margin: 0 0 8px; font-family: Sora, system-ui, sans-serif; font-size: 18px; font-weight: 700; } .ds-card-body { margin: 0; color: #999999; font-size: 14px; line-height: 1.45; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Filled dark field with gold focus ring.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">E-mail</span><input class=\"ds-input\" type=\"email\" placeholder=\"voce@email.com\" /></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 8px; font-family: Inter, system-ui, sans-serif; } .ds-field-label { color: #999999; font-size: 14px; } .ds-input { background: #1E1E1E; color: #FFFFFF; border: 1px solid rgba(58,58,58,0.35); border-radius: 14px; padding: 16px; font-size: 14px; } .ds-input::placeholder { color: #777777; } .ds-input:focus { outline: none; border-color: #D4AF37; border-width: 1.5px; }"
+    },
+    {
+      "name": "Time Slot Chip",
+      "kind": "chip",
+      "refersTo": "chip-time-idle",
+      "description": "Bookable time chip — idle gold stroke, selected gold fill.",
+      "html": "<div class=\"ds-slots\"><button class=\"ds-chip\">09:00</button><button class=\"ds-chip ds-chip-selected\">09:30</button><button class=\"ds-chip\" disabled>10:00</button></div>",
+      "css": ".ds-slots { display: flex; gap: 10px; } .ds-chip { min-width: 72px; height: 40px; border-radius: 14px; border: 1.5px solid #D4AF37; background: transparent; color: #FFB300; font-family: Inter, system-ui, sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; } .ds-chip-selected { background: #D4AF37; color: #121212; } .ds-chip:disabled { border-color: transparent; background: rgba(58,58,58,0.4); color: rgba(119,119,119,0.5); cursor: not-allowed; } .ds-chip:focus-visible { outline: 2px solid #FFB300; outline-offset: 2px; }"
+    },
+    {
+      "name": "Bottom Nav Glass",
+      "kind": "nav",
+      "refersTo": "nav-bottom-glass",
+      "description": "Floating mobile customer nav with gold active state.",
+      "html": "<nav class=\"ds-bottom-nav\"><button class=\"ds-nav-item ds-nav-active\">Início</button><button class=\"ds-nav-item\">Agendar</button><button class=\"ds-nav-item\">Horários</button></nav>",
+      "css": ".ds-bottom-nav { display: flex; gap: 8px; justify-content: space-around; background: rgba(30,30,30,0.9); border: 1px solid rgba(212,175,55,0.2); border-radius: 18px; padding: 10px 14px; font-family: Inter, system-ui, sans-serif; } .ds-nav-item { background: transparent; border: none; color: #777777; font-size: 12px; font-weight: 500; cursor: pointer; } .ds-nav-active { color: #D4AF37; font-weight: 600; } .ds-nav-item:focus-visible { outline: 2px solid #D4AF37; outline-offset: 2px; }"
+    },
+    {
+      "name": "VIP Status Card",
+      "kind": "custom",
+      "refersTo": "card-surface",
+      "description": "Signature home VIP card — warm charcoal gradient and gold rim.",
+      "html": "<div class=\"ds-vip\"><div class=\"ds-vip-badge\">Ativa</div><h3 class=\"ds-vip-title\">Clube VIP</h3><p class=\"ds-vip-body\">Plano ativo — benefícios liberados no agendamento.</p></div>",
+      "css": ".ds-vip { background: linear-gradient(135deg, #221A0A, #141414); border: 1px solid rgba(212,175,55,0.4); border-radius: 16px; padding: 16px; color: #FFFFFF; font-family: Inter, system-ui, sans-serif; box-shadow: 0 8px 18px rgba(0,0,0,0.2); } .ds-vip-badge { display: inline-block; margin-bottom: 8px; padding: 3px 8px; border-radius: 20px; background: rgba(76,175,80,0.16); border: 1px solid rgba(76,175,80,0.45); color: #4CAF50; font-size: 10px; font-weight: 800; } .ds-vip-title { margin: 0 0 4px; font-family: Sora, system-ui, sans-serif; font-weight: 800; } .ds-vip-body { margin: 0; color: #999999; font-size: 12px; line-height: 1.35; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Midnight Atelier",
+    "overview": "Uma oficina noturna de barbearia premium: carvão profundo, ouro de atelier e tipografia limpa. O produto é multi-tenant e Operate (agendar, VIP, painel), mas a presença visual é de vitrine dark-luxury — hero, Clube VIP e CTAs de ouro carregam a atmosfera; a operação permanece escaneável por baixo.\n\nA densidade é generosa nos cantos e nos cards (vitrine tátil), sem cair em glassmorphism genérico nem em dashboard clínico. O ouro é raro e deliberado: ilumina ação, status VIP e ênfase — não decora tudo.",
+    "keyCharacteristics": [
+      "Dark-first (#121212 → #1E1E1E) com ouro #D4AF37 como voz única de acento",
+      "Sora (display/títulos) + Inter (UI/corpo)",
+      "Cantos generosos (14–18px); botões altos (52px)",
+      "Profundidade híbrida: camadas tonais + sombra suave só em hero/VIP/CTA",
+      "Multi-tenant: a marca da loja personaliza o chrome, o sistema visual permanece"
+    ],
+    "rules": [
+      {
+        "name": "The One Gold Rule",
+        "body": "O ouro de atelier aparece em ≤ ~10–15% da tela — CTAs, status VIP, seleção. Se tudo brilhar, nada brilha.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Purple SaaS Rule",
+        "body": "Sem gradientes índigo/roxo, glow neon ou glass decorativo como identidade.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two-Voice Rule",
+        "body": "Sora fala marca e hierarchy; Inter fala tarefa. Não inverter.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tenant Frame Rule",
+        "body": "Largura e padding são do sistema; nome/foto/logo vêm do tenant — nunca misturar dados entre barbearias.",
+        "section": "layout"
+      },
+      {
+        "name": "The Shadow-as-Spotlight Rule",
+        "body": "Sombra não empilha cards; ilumina o que a vitrine quer vender (VIP, hero, ação primária).",
+        "section": "elevation"
+      },
+      {
+        "name": "The Soft Forge Rule",
+        "body": "Prefira 14–18px a pills full-round em containers grandes; full-round só em badges/chips pequenos.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do tratar o ouro como voz rara (One Gold Rule).",
+      "Do usar Sora para hierarchy e Inter para tarefa.",
+      "Do manter dark-first e personalizar só com assets do tenant.",
+      "Do agrupar horários em Manhã / Tarde / Noite no booking.",
+      "Do elevar VIP e hero como momentos de vitrine (sombra/híbrido permitido)."
+    ],
+    "donts": [
+      "Don't introduzir roxo, indigo SaaS ou glow neon como identidade.",
+      "Don't usar serif cream / terracotta “barbearia Instagram”.",
+      "Don't virar dashboard branco clínico com cards de métrica genéricos.",
+      "Don't aplicar glassmorphism decorativo em toda superfície.",
+      "Don't inventar prova social, pricing ou cases fora do PRODUCT.md."
+    ]
+  }
+}
