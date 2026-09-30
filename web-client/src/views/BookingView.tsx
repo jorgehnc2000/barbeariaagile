@@ -191,17 +191,17 @@ export function BookingView({ onNavigate }: BookingViewProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="grid gap-3 sm:grid-cols-2"
+            className="grid items-stretch gap-3 sm:grid-cols-2"
           >
             {services.map((svc) => {
               const Icon = iconMap[svc.icon] ?? Scissors;
               const active = selectedService?.id === svc.id;
               return (
-                <button key={svc.id} onClick={() => setSelectedService(svc)}>
+                <button key={svc.id} onClick={() => setSelectedService(svc)} className="flex h-full w-full text-left">
                   <Card
                     interactive
                     className={[
-                      'flex items-center gap-4 p-4 transition-colors',
+                      'flex h-full w-full items-center gap-4 p-4 transition-colors',
                       active ? 'border-gold-500/60 bg-gold-500/[0.06]' : '',
                     ].join(' ')}
                   >
@@ -213,14 +213,14 @@ export function BookingView({ onNavigate }: BookingViewProps) {
                     >
                       <Icon size={22} strokeWidth={2} />
                     </span>
-                    <div className="flex-1 text-left">
-                      <h3 className="font-semibold text-white">{svc.name}</h3>
-                      <p className="text-xs text-zinc-400 line-clamp-1">{svc.description}</p>
+                    <div className="flex min-h-[4.25rem] min-w-0 flex-1 flex-col justify-center text-left">
+                      <h3 className="truncate font-semibold text-white">{svc.name}</h3>
+                      <p className="min-h-4 truncate text-xs text-zinc-400">{svc.description || '\u00a0'}</p>
                       <div className="mt-1.5 flex items-center gap-3">
-                        <span className="text-sm font-bold text-gold-400">
+                        <span className="shrink-0 text-sm font-bold text-gold-400">
                           {formatCurrency(svc.price)}
                         </span>
-                        <span className="flex items-center gap-1 text-xs text-zinc-500">
+                        <span className="flex shrink-0 items-center gap-1 text-xs text-zinc-500">
                           <Clock size={12} /> {svc.durationMin} min
                         </span>
                       </div>
