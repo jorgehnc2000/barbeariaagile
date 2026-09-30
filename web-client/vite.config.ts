@@ -13,4 +13,18 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  server: {
+    proxy: {
+      '/api/mp/card_tokens': {
+        target: 'https://api.mercadopago.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/mp\/card_tokens/, '/v1/card_tokens'),
+      },
+      '/api/create-subscription': {
+        target: 'https://rgrhalzcbhhydizlgztn.supabase.co',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/create-subscription/, '/functions/v1/create-subscription'),
+      },
+    },
+  },
 });

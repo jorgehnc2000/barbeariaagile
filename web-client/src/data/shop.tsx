@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { supabase, supabaseAnonKey, supabaseUrl } from '@/lib/supabase';
+import { supabase, supabaseAnonKey } from '@/lib/supabase';
 import type { Appointment, Barber, Service, UserProfile, VipPlan } from '@/types';
 
 export const TIME_SLOTS = [
@@ -438,7 +438,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       if (month < 1 || month > 12) throw new Error('Vencimento inválido.');
 
       const tokenResponse = await fetch(
-        `https://api.mercadopago.com/v1/card_tokens?public_key=${encodeURIComponent(mpPublicKey)}`,
+        `/api/mp/card_tokens?public_key=${encodeURIComponent(mpPublicKey)}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -466,7 +466,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       const accessToken = sessionData.session?.access_token;
       if (!accessToken) throw new Error('Faça login para assinar o Clube VIP.');
 
-      const subscriptionResponse = await fetch(`${supabaseUrl}/functions/v1/create-subscription`, {
+      const subscriptionResponse = await fetch('/api/create-subscription', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,

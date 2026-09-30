@@ -4,6 +4,14 @@
   "buildCommand": "npm run build --prefix web-client",
   "outputDirectory": "web-client/dist",
   "rewrites": [
+    {
+      "source": "/api/mp/card_tokens",
+      "destination": "https://api.mercadopago.com/v1/card_tokens"
+    },
+    {
+      "source": "/api/create-subscription",
+      "destination": "https://rgrhalzcbhhydizlgztn.supabase.co/functions/v1/create-subscription"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
