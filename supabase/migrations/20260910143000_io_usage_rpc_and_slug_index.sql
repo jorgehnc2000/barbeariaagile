@@ -17,7 +17,7 @@ as $$
      and a.covered_by_plan = true
      and a.data_inicio >= p_period_start
      and a.data_inicio < p_period_end
-     and lower(coalesce(a.status, '')) not in (
+     and lower(coalesce(a.status::text, '')) not in (
        'cancelado', 'canceled', 'cancelled'
      );
 $$;

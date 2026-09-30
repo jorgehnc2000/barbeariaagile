@@ -5,6 +5,7 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { HomeView } from '@/views/HomeView';
 import { BookingView } from '@/views/BookingView';
 import { VipView } from '@/views/VipView';
+import { AuthDialog } from '@/components/AuthDialog';
 import { useShop } from '@/data/shop';
 import type { ViewId } from '@/types';
 
@@ -55,6 +56,7 @@ export default function App() {
           </motion.div>
         </AnimatePresence>
       </main>
+      <AuthDialog />
     </div>
   );
 }

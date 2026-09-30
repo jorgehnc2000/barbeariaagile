@@ -50,7 +50,8 @@ const serviceIcons: Record<string, LucideIcon> = {
 };
 
 export function HomeView({ onNavigate }: HomeViewProps) {
-  const { currentUser, upcomingAppointment, barbers, services } = useShop();
+  const { currentUser, upcomingAppointment, barbers, services, pendingReview, submitReview, requestAuth } =
+    useShop();
   const greeting = getGreeting();
   const nextAt = upcomingAppointment?.startsAt
     ? new Date(upcomingAppointment.startsAt)
@@ -75,7 +76,7 @@ export function HomeView({ onNavigate }: HomeViewProps) {
       {/* Mobile top bar */}
       <header className="flex items-center justify-between lg:hidden">
         <Logo size="sm" />
-        <button className="relative">
+        <button type="button" className="relative" onClick={requestAuth}>
           <img
             src={currentUser.avatarUrl}
             alt={currentUser.name}
@@ -84,6 +85,14 @@ export function HomeView({ onNavigate }: HomeViewProps) {
           <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-ink-950 bg-emerald-500" />
         </button>
       </header>
+
+      {pendingReview && (
+        <ReviewPrompt
+          serviceName={pendingReview.serviceName}
+          barberName={pendingReview.barberName}
+          onRate={(rating) => void submitReview(rating)}
+        />
+      )}
 
       {/* ===== IMMERSIVE HERO ===== */}
       <section ref={heroRef} className="relative -mx-4 h-[90vh] overflow-hidden lg:-mx-8 lg:h-screen">
@@ -558,4 +567,34 @@ function getGreeting(): string {
   if (h < 12) return 'Bom dia';
   if (h < 18) return 'Boa tarde';
   return 'Boa noite';
+}
+
+function ReviewPrompt({
+  serviceName,
+  barberName,
+  onRate,
+}: {
+  serviceName: string;
+  barberName: string;
+  onRate: (rating: number) => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-gold-500/30 bg-ink-900/80 p-4">
+      <p className="text-sm text-zinc-200">
+        Como foi {serviceName} com {barberName}?
+      </p>
+      <div className="mt-3 flex gap-2">
+        {[1, 2, 3, 4, 5].map((rating) => (
+          <button
+            key={rating}
+            type="button"
+            onClick={() => onRate(rating)}
+            className="rounded-xl border border-zinc-700 px-3 py-2 text-sm text-gold-400 hover:border-gold-500"
+          >
+            {rating}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }

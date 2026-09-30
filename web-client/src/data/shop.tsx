@@ -48,6 +48,13 @@ const guestUser: UserProfile = {
   nextRewardAt: 1,
 };
 
+export type PendingReview = {
+  appointmentId: string;
+  barberId: string;
+  barberName: string;
+  serviceName: string;
+};
+
 type ShopContextValue = {
   loading: boolean;
   error: string | null;
@@ -70,6 +77,14 @@ type ShopContextValue = {
     durationMin: number;
   }) => Promise<void>;
   openLegacyAccount: (path?: string) => void;
+  authOpen: boolean;
+  requestAuth: () => void;
+  closeAuth: () => void;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<string | null>;
+  signOut: () => Promise<void>;
+  pendingReview: PendingReview | null;
+  submitReview: (rating: number) => Promise<void>;
 };
 
 const ShopContext = createContext<ShopContextValue | null>(null);
@@ -87,6 +102,8 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const [upcomingAppointment, setUpcomingAppointment] = useState<Appointment | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [occupiedTimes, setOccupiedTimes] = useState<Set<string>>(new Set());
+  const [authOpen, setAuthOpen] = useState(false);
+  const [pendingReview, setPendingReview] = useState<PendingReview | null>(null);
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((_event, next) => {
@@ -175,6 +192,23 @@ export function ShopProvider({ children }: { children: ReactNode }) {
             .filter((row) => (row as { disponivel?: boolean }).disponivel !== false)
             .map((row) => mapBarber(row as Record<string, unknown>)),
         );
+        const ratings = await supabase.rpc('barber_rating_summary', { p_barbershop_id: id });
+        if (!ratings.error && ratings.data) {
+          const byId = new Map(
+            (ratings.data as { barbeiro_id: string; rating: number; reviews: number }[]).map((row) => [
+              String(row.barbeiro_id),
+              row,
+            ]),
+          );
+          setBarbers((current) =>
+            current.map((barber) => {
+              const stats = byId.get(barber.id);
+              return stats
+                ? { ...barber, rating: Number(stats.rating), reviews: Number(stats.reviews) }
+                : barber;
+            }),
+          );
+        }
         setPlans(
           (planRows.data ?? []).map((row, index) => mapPlan(row as Record<string, unknown>, index)),
         );
@@ -185,6 +219,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         if (!userId || !activeSession || cancelled) {
           setCurrentUser(guestUser);
           setUpcomingAppointment(null);
+          setPendingReview(null);
           return;
         }
 
@@ -192,6 +227,8 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         if (!cancelled) setCurrentUser(profile.user);
         const next = await loadUpcoming(id, userId);
         if (!cancelled) setUpcomingAppointment(next);
+        const review = await loadPendingReview(id, userId);
+        if (!cancelled) setPendingReview(review);
       } catch (cause) {
         if (!cancelled) {
           setError(cause instanceof Error ? cause.message : 'Falha ao carregar a barbearia.');
@@ -214,30 +251,17 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         setOccupiedTimes(new Set());
         return;
       }
-      const start = new Date(day.getFullYear(), day.getMonth(), day.getDate());
-      const end = new Date(start);
-      end.setDate(end.getDate() + 1);
-      const { data, error: queryError } = await supabase
-        .from('agendamentos')
-        .select('data_inicio, status')
-        .eq('barbershop_id', barbershopId)
-        .eq('barbeiro_id', barberId)
-        .gte('data_inicio', start.toISOString())
-        .lt('data_inicio', end.toISOString());
+      const dayKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+      const { data, error: queryError } = await supabase.rpc('occupied_slot_times', {
+        p_barbershop_id: barbershopId,
+        p_barber_id: barberId,
+        p_day: dayKey,
+      });
       if (queryError) {
         setOccupiedTimes(new Set());
         return;
       }
-      const taken = new Set<string>();
-      for (const row of data ?? []) {
-        const status = String(row.status ?? '').toLowerCase();
-        if (status === 'cancelado' || status === 'cancelled') continue;
-        const when = new Date(String(row.data_inicio));
-        const hh = String(when.getHours()).padStart(2, '0');
-        const mm = String(when.getMinutes()).padStart(2, '0');
-        taken.add(`${hh}:${mm}`);
-      }
-      setOccupiedTimes(taken);
+      setOccupiedTimes(new Set((data ?? []).map((row: { slot: string }) => row.slot)));
     },
     [barbershopId],
   );
@@ -267,7 +291,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       }
       const { data: auth } = await supabase.auth.getSession();
       if (!auth.session) {
-        openLegacyAccount('/login');
+        setAuthOpen(true);
         throw new Error('Entre na conta para confirmar o horário.');
       }
       await ensureClientProfile(barbershopId, auth.session.user);
@@ -284,7 +308,73 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       const rows = Array.isArray(data) ? data : data ? [data] : [];
       if (rows.length === 0) throw new Error('O agendamento não foi criado.');
     },
-    [barbershopId, openLegacyAccount, slug],
+    [barbershopId, slug],
+  );
+
+  const signIn = useCallback(async (email: string, password: string) => {
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    if (authError) throw new Error(authError.message);
+    setAuthOpen(false);
+  }, []);
+
+  const signUp = useCallback(
+    async (email: string, password: string, name: string) => {
+      const { data, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { nome: name } },
+      });
+      if (authError) throw new Error(authError.message);
+      if (data.session && data.user && barbershopId) {
+        await ensureClientProfile(barbershopId, data.user);
+        setAuthOpen(false);
+        return null;
+      }
+      return 'Conta criada. Confirme o e-mail para entrar.';
+    },
+    [barbershopId],
+  );
+
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
+    setCurrentUser(guestUser);
+    setUpcomingAppointment(null);
+    setPendingReview(null);
+  }, []);
+
+  const submitReview = useCallback(
+    async (rating: number) => {
+      if (!pendingReview || !barbershopId || !session?.user.id) {
+        throw new Error('Entre na conta para avaliar.');
+      }
+      const { error: insertError } = await supabase.from('barber_reviews').insert({
+        barbershop_id: barbershopId,
+        barbeiro_id: pendingReview.barberId,
+        cliente_id: session.user.id,
+        agendamento_id: pendingReview.appointmentId,
+        rating,
+      });
+      if (insertError) throw new Error(insertError.message);
+      setPendingReview(null);
+      const ratings = await supabase.rpc('barber_rating_summary', { p_barbershop_id: barbershopId });
+      if (!ratings.error && ratings.data) {
+        const byId = new Map(
+          (ratings.data as { barbeiro_id: string; rating: number; reviews: number }[]).map((row) => [
+            String(row.barbeiro_id),
+            row,
+          ]),
+        );
+        setBarbers((current) =>
+          current.map((barber) => {
+            const stats = byId.get(barber.id);
+            return stats
+              ? { ...barber, rating: Number(stats.rating), reviews: Number(stats.reviews) }
+              : barber;
+          }),
+        );
+      }
+    },
+    [barbershopId, pendingReview, session?.user.id],
   );
 
   const value = useMemo<ShopContextValue>(
@@ -305,6 +395,14 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       loadOccupied,
       createBooking,
       openLegacyAccount,
+      authOpen,
+      requestAuth: () => setAuthOpen(true),
+      closeAuth: () => setAuthOpen(false),
+      signIn,
+      signUp,
+      signOut,
+      pendingReview,
+      submitReview,
     }),
     [
       loading,
@@ -322,6 +420,12 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       loadOccupied,
       createBooking,
       openLegacyAccount,
+      authOpen,
+      signIn,
+      signUp,
+      signOut,
+      pendingReview,
+      submitReview,
     ],
   );
 
@@ -401,6 +505,41 @@ function iconForService(name: string): string {
   return 'scissors';
 }
 
+async function loadPendingReview(barbershopId: string, userId: string): Promise<PendingReview | null> {
+  const { data: bookings, error } = await supabase
+    .from('agendamentos')
+    .select('id, barbeiro_id, status, data_inicio, barbeiros(nome), servicos(nome)')
+    .eq('cliente_id', userId)
+    .eq('barbershop_id', barbershopId)
+    .lt('data_inicio', new Date().toISOString())
+    .order('data_inicio', { ascending: false })
+    .limit(8);
+  if (error || !bookings) return null;
+
+  const done = bookings.filter((row) => {
+    const status = String(row.status ?? '').toLowerCase();
+    return ['confirmado', 'concluido', 'completed', 'finalizado'].includes(status);
+  });
+  if (done.length === 0) return null;
+
+  const ids = done.map((row) => String(row.id));
+  const { data: reviews } = await supabase
+    .from('barber_reviews')
+    .select('agendamento_id')
+    .in('agendamento_id', ids);
+  const reviewed = new Set((reviews ?? []).map((row) => String(row.agendamento_id)));
+  const pending = done.find((row) => !reviewed.has(String(row.id)));
+  if (!pending) return null;
+  const barber = firstJoin(pending.barbeiros);
+  const service = firstJoin(pending.servicos);
+  return {
+    appointmentId: String(pending.id),
+    barberId: String(pending.barbeiro_id),
+    barberName: String(barber?.nome ?? 'Barbeiro'),
+    serviceName: String(service?.nome ?? 'serviço'),
+  };
+}
+
 async function loadProfile(
   barbershopId: string,
   userId: string,
@@ -408,7 +547,7 @@ async function loadProfile(
 ): Promise<{ user: UserProfile }> {
   const { data: profile } = await supabase
     .from('users')
-    .select('nome')
+    .select('nome, avatar_url')
     .eq('id', userId)
     .maybeSingle();
   const rawName =
@@ -416,6 +555,16 @@ async function loadProfile(
     String(authUser.user_metadata?.nome ?? authUser.user_metadata?.full_name ?? '').trim() ||
     authUser.email?.split('@')[0] ||
     'Cliente';
+
+  const [{ data: loyalty }, { data: settings }] = await Promise.all([
+    supabase
+      .from('loyalty_accounts')
+      .select('points, member_since')
+      .eq('user_id', userId)
+      .eq('barbershop_id', barbershopId)
+      .maybeSingle(),
+    supabase.from('loyalty_settings').select('reward_at').eq('barbershop_id', barbershopId).maybeSingle(),
+  ]);
 
   const { data: subscription } = await supabase
     .from('subscriptions')
@@ -443,13 +592,15 @@ async function loadProfile(
     user: {
       name: rawName,
       firstName: rawName.split(' ')[0] || rawName,
-      avatarUrl: GUEST_AVATAR,
+      avatarUrl: String(profile?.avatar_url ?? '') || GUEST_AVATAR,
       membershipTier: active ? String(plan?.name ?? 'Clube VIP') : 'Sem plano',
       membershipTierId: active ? String(plan?.id ?? '') : '',
-      loyaltyPoints: 0,
+      loyaltyPoints: Number(loyalty?.points ?? 0),
       visitsThisMonth: count ?? 0,
-      memberSince: '—',
-      nextRewardAt: 1,
+      memberSince: loyalty?.member_since
+        ? new Date(`${loyalty.member_since}T12:00:00`).getFullYear().toString()
+        : '—',
+      nextRewardAt: Number(settings?.reward_at ?? 1500),
     },
   };
 }

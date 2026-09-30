@@ -20,7 +20,7 @@ const planIcons: Record<string, typeof Crown> = {
 };
 
 export function VipView({ onNavigate }: VipViewProps) {
-  const { plans: vipPlans, currentUser, openLegacyAccount } = useShop();
+  const { plans: vipPlans, currentUser, openLegacyAccount, session, requestAuth } = useShop();
   const [selected, setSelected] = useState<string>('');
   useEffect(() => {
     if (selected) return;
@@ -150,7 +150,7 @@ export function VipView({ onNavigate }: VipViewProps) {
           leftIcon={<Crown size={20} />}
           className="sm:min-w-[280px]"
           disabled={isCurrent || !selected}
-          onClick={() => openLegacyAccount()}
+          onClick={() => (session ? openLegacyAccount() : requestAuth())}
         >
           {isCurrent ? 'Plano Ativo' : `Assinar ${vipPlans.find((p) => p.id === selected)?.name}`}
         </Button>

@@ -17,7 +17,7 @@ const navItems: { id: ViewId; label: string; icon: LucideIcon }[] = [
 ];
 
 export function TopNav({ current, onNavigate }: TopNavProps) {
-  const { currentUser } = useShop();
+  const { currentUser, requestAuth } = useShop();
   return (
     <header className="fixed top-0 left-0 right-0 z-50 hidden lg:block">
       <div className="glass-strong border-b border-zinc-800/50">
@@ -55,7 +55,7 @@ export function TopNav({ current, onNavigate }: TopNavProps) {
             })}
           </nav>
 
-          <button className="flex items-center gap-3">
+          <button type="button" onClick={requestAuth} className="flex items-center gap-3">
             <div className="text-right">
               <p className="text-sm font-semibold text-zinc-100">{currentUser.firstName}</p>
               <p className="text-xs text-gold-500">{currentUser.membershipTier}</p>
