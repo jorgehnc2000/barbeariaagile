@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAnonKey, supabaseUrl } from '@/lib/supabase';
 import type { Appointment, Barber, Service, UserProfile, VipPlan } from '@/types';
 
 export const TIME_SLOTS = [
@@ -451,35 +451,48 @@ export function ShopProvider({ children }: { children: ReactNode }) {
           }),
         },
       );
-      const tokenBody = (await tokenResponse.json().catch(() => ({}))) as {
+      const tokenBody = (await readJson(tokenResponse)) as {
         id?: string;
         message?: string;
         error?: string;
+        cause?: { description?: string }[];
       };
       if (!tokenResponse.ok || !tokenBody.id) {
-        throw new Error(tokenBody.message || tokenBody.error || 'Não foi possível validar o cartão.');
+        const cause = tokenBody.cause?.find((item) => item.description)?.description;
+        throw new Error(cause || tokenBody.message || tokenBody.error || 'Não foi possível validar o cartão.');
       }
 
-      const { data, error: invokeError } = await supabase.functions.invoke('create-subscription', {
-        body: {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) throw new Error('Faça login para assinar o Clube VIP.');
+
+      const subscriptionResponse = await fetch(`${supabaseUrl}/functions/v1/create-subscription`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          apikey: supabaseAnonKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           plan_id: plan.id,
           card_token_id: tokenBody.id,
           barbershop_id: barbershopId,
           user_id: user.id,
           email: user.email,
-        },
+        }),
       });
-      if (invokeError) {
-        const context = (invokeError as { context?: Response }).context;
-        let detail = invokeError.message;
-        if (context) {
-          const payload = (await context.json().catch(() => null)) as { error?: string; message?: string } | null;
-          detail = payload?.error || payload?.message || detail;
-        }
-        throw new Error(detail || 'Não foi possível criar a assinatura.');
-      }
-      if (data && typeof data === 'object' && 'error' in data && data.error) {
-        throw new Error(String(data.error));
+      const subscriptionBody = (await readJson(subscriptionResponse)) as {
+        error?: string;
+        message?: string;
+        details?: string;
+      };
+      if (!subscriptionResponse.ok || subscriptionBody.error) {
+        throw new Error(
+          subscriptionBody.error ||
+            subscriptionBody.message ||
+            subscriptionBody.details ||
+            `Não foi possível criar a assinatura (${subscriptionResponse.status}).`,
+        );
       }
 
       const profile = await loadProfile(barbershopId, user.id, user);
@@ -555,6 +568,21 @@ export function useShop() {
   const value = useContext(ShopContext);
   if (!value) throw new Error('useShop deve ficar dentro de ShopProvider.');
   return value;
+}
+
+function readJson(response: Response): Promise<Record<string, unknown>> {
+  return response
+    .text()
+    .then((text) => {
+      if (!text.trim()) return {};
+      try {
+        const parsed = JSON.parse(text) as unknown;
+        return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
+      } catch {
+        return { message: text };
+      }
+    })
+    .catch(() => ({}));
 }
 
 function readSlug(): string | null {
