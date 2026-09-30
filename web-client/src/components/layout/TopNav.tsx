@@ -2,7 +2,7 @@ import { Home, CalendarPlus, Crown } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Logo } from '@/components/Logo';
-import { currentUser } from '@/data/mockData';
+import { useShop } from '@/data/shop';
 import type { ViewId } from '@/types';
 
 interface TopNavProps {
@@ -17,6 +17,7 @@ const navItems: { id: ViewId; label: string; icon: LucideIcon }[] = [
 ];
 
 export function TopNav({ current, onNavigate }: TopNavProps) {
+  const { currentUser } = useShop();
   return (
     <header className="fixed top-0 left-0 right-0 z-50 hidden lg:block">
       <div className="glass-strong border-b border-zinc-800/50">

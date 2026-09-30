@@ -106,6 +106,12 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     }
 
     let cancelled = false;
+    const timeout = window.setTimeout(() => {
+      if (cancelled) return;
+      cancelled = true;
+      setError('O Supabase não respondeu. Se o projeto estiver pausado, retome no dashboard.');
+      setLoading(false);
+    }, 12000);
     setLoading(true);
     setError(null);
 
@@ -191,12 +197,14 @@ export function ShopProvider({ children }: { children: ReactNode }) {
           setError(cause instanceof Error ? cause.message : 'Falha ao carregar a barbearia.');
         }
       } finally {
+        window.clearTimeout(timeout);
         if (!cancelled) setLoading(false);
       }
     })();
 
     return () => {
       cancelled = true;
+      window.clearTimeout(timeout);
     };
   }, [slug, session?.user.id]);
 
