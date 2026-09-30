@@ -1,4 +1,8 @@
 {
+  "framework": null,
+  "installCommand": "npm install --ignore-scripts",
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": "build/web",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]

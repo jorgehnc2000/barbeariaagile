@@ -1,0 +1,7 @@
+{
+  "name": "barbeariaagile",
+  "private": true,
+  "scripts": {
+    "vercel-build": "bash scripts/vercel_build.sh"
+  }
+}
