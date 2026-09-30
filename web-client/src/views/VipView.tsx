@@ -25,6 +25,7 @@ export function VipView({ onNavigate }: VipViewProps) {
   } = useShop();
   const [selected, setSelected] = useState<string>('');
   const [cardholder, setCardholder] = useState('');
+  const [cpf, setCpf] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry] = useState('');
   const [cvv, setCvv] = useState('');
@@ -58,9 +59,11 @@ export function VipView({ onNavigate }: VipViewProps) {
         expiry,
         cvv,
         cardholder,
+        cpf,
       });
       setCardNumber('');
       setCvv('');
+      setCpf('');
       setDone(true);
       setNotice('Assinatura enviada ao Mercado Pago.');
     } catch (cause) {
@@ -195,6 +198,14 @@ export function VipView({ onNavigate }: VipViewProps) {
               value={cardholder}
               onChange={(event) => setCardholder(event.target.value)}
               placeholder="Nome no cartão"
+              className="rounded-xl border border-zinc-800 bg-ink-950 px-4 py-3 text-sm text-white outline-none focus:border-gold-500/50 sm:col-span-2"
+            />
+            <input
+              inputMode="numeric"
+              value={cpf}
+              onChange={(event) => setCpf(event.target.value)}
+              placeholder="CPF do titular"
+              autoComplete="off"
               className="rounded-xl border border-zinc-800 bg-ink-950 px-4 py-3 text-sm text-white outline-none focus:border-gold-500/50 sm:col-span-2"
             />
             <input

@@ -270,9 +270,13 @@ Deno.serve(async (req: Request) => {
 
     const newPreapprovalId = String(mercadoPagoData.id ?? "").trim();
     if (!mercadoPagoResponse.ok || !newPreapprovalId) {
+      const mpMessage = String(mercadoPagoData.message ?? "");
+      const error = mpMessage.includes("CC_VAL_433")
+        ? "O Mercado Pago recusou este cartão. Confira número, validade, CVV e CPF do titular."
+        : mpMessage || "Erro no Mercado Pago.";
       return jsonResponse(
         {
-          error: "Erro no Mercado Pago.",
+          error,
           status: mercadoPagoResponse.status,
           details: mercadoPagoData,
         },

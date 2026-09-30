@@ -94,6 +94,7 @@ type ShopContextValue = {
     expiry: string;
     cvv: string;
     cardholder: string;
+    cpf: string;
   }) => Promise<void>;
 };
 
@@ -416,6 +417,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       expiry: string;
       cvv: string;
       cardholder: string;
+      cpf: string;
     }) => {
       if (!barbershopId) throw new Error('Barbearia não identificada.');
       if (!vipEnabled) throw new Error('O Clube VIP não está habilitado nesta barbearia.');
@@ -431,6 +433,8 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       const plan = plans.find((item) => item.id === input.planId);
       if (!plan?.mpPlanId) throw new Error('Este plano ainda não está disponível para assinatura.');
 
+      const cpf = input.cpf.replace(/\D/g, '');
+      if (cpf.length !== 11) throw new Error('Informe o CPF do titular do cartão.');
       const expiry = input.expiry.replace(/\D/g, '');
       if (expiry.length !== 4) throw new Error('Use o vencimento no formato MM/AA.');
       const month = Number(expiry.slice(0, 2));
@@ -447,7 +451,10 @@ export function ShopProvider({ children }: { children: ReactNode }) {
             expiration_month: month,
             expiration_year: year,
             security_code: input.cvv.replace(/\D/g, ''),
-            cardholder: { name: input.cardholder.trim() },
+            cardholder: {
+              name: input.cardholder.trim(),
+              identification: { type: 'CPF', number: cpf },
+            },
           }),
         },
       );
@@ -481,16 +488,10 @@ export function ShopProvider({ children }: { children: ReactNode }) {
           email: user.email,
         }),
       });
-      const subscriptionBody = (await readJson(subscriptionResponse)) as {
-        error?: string;
-        message?: string;
-        details?: string;
-      };
+      const subscriptionBody = await readJson(subscriptionResponse);
       if (!subscriptionResponse.ok || subscriptionBody.error) {
         throw new Error(
-          subscriptionBody.error ||
-            subscriptionBody.message ||
-            subscriptionBody.details ||
+          subscriptionError(subscriptionBody) ||
             `Não foi possível criar a assinatura (${subscriptionResponse.status}).`,
         );
       }
@@ -568,6 +569,21 @@ export function useShop() {
   const value = useContext(ShopContext);
   if (!value) throw new Error('useShop deve ficar dentro de ShopProvider.');
   return value;
+}
+
+function subscriptionError(body: Record<string, unknown>): string {
+  const details = body.details;
+  const detailMessage =
+    typeof details === 'string'
+      ? details
+      : details && typeof details === 'object'
+        ? String((details as { message?: unknown }).message ?? '')
+        : '';
+  if (detailMessage.includes('CC_VAL_433')) {
+    return 'O Mercado Pago recusou este cartão. Confira número, validade, CVV e CPF do titular.';
+  }
+  if (detailMessage) return detailMessage;
+  return String(body.error || body.message || '');
 }
 
 function readJson(response: Response): Promise<Record<string, unknown>> {
