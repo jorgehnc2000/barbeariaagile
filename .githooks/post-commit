@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Push current branch to origin after every commit (CLI / Agent).
+branch="$(git symbolic-ref --short HEAD 2>/dev/null)" || exit 0
+git remote get-url origin >/dev/null 2>&1 || exit 0
+git push -u origin "$branch" >/dev/null 2>&1 || true
