@@ -278,7 +278,7 @@ export function HomeView({ onNavigate }: HomeViewProps) {
               <div className="relative mt-6 flex items-center justify-between">
                 <div className="flex gap-5">
                   <MiniStat icon={<Flame size={14} />} label="Visitas" value={String(currentUser.visitsThisMonth)} />
-                  <MiniStat icon={<Sparkles size={14} />} label="Nível" value="Ouro" />
+                  <MiniStat icon={<Sparkles size={14} />} label="Plano" value={currentUser.membershipTier} />
                 </div>
                 <ChevronRight size={18} className="text-gold-400 transition-transform group-hover:translate-x-1" />
               </div>
@@ -462,7 +462,7 @@ export function HomeView({ onNavigate }: HomeViewProps) {
       >
         <StatPill icon={<Sparkles size={18} />} label="Pontos" value={String(currentUser.loyaltyPoints)} />
         <StatPill icon={<Flame size={18} />} label="Visitas" value={String(currentUser.visitsThisMonth)} />
-        <StatPill icon={<Crown size={18} />} label="Plano" value="Ultra" />
+        <StatPill icon={<Crown size={18} />} label="Plano" value={currentUser.membershipTier} />
       </motion.section>
     </div>
   );
@@ -521,7 +521,9 @@ function StatPill({
   return (
     <Card className="flex flex-col items-center gap-1.5 p-4">
       <span className="text-gold-400">{icon}</span>
-      <span className="font-display text-lg font-bold text-white">{value}</span>
+      <span className="max-w-full truncate px-1 text-center font-display text-lg font-bold text-white" title={value}>
+        {value}
+      </span>
       <span className="text-[10px] uppercase tracking-wide text-zinc-500">{label}</span>
     </Card>
   );

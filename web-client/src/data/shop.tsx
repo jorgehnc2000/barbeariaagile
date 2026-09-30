@@ -299,6 +299,57 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     [barbershopId],
   );
 
+  const refreshAccount = useCallback(async () => {
+    if (!barbershopId) return;
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
+    if (!user) {
+      setCurrentUser(guestUser);
+      setUpcomingAppointment(null);
+      setPendingReview(null);
+      return;
+    }
+    const profile = await loadProfile(barbershopId, user.id, user);
+    setCurrentUser(profile.user);
+    setUpcomingAppointment(await loadUpcoming(barbershopId, user.id));
+    setPendingReview(await loadPendingReview(barbershopId, user.id));
+  }, [barbershopId]);
+
+  useEffect(() => {
+    if (!barbershopId || !session?.user.id) return;
+    const userId = session.user.id;
+    const refresh = () => {
+      void refreshAccount();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', onVisible);
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') refresh();
+    }, 15000);
+    const channel = supabase
+      .channel(`account-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'agendamentos',
+          filter: `cliente_id=eq.${userId}`,
+        },
+        refresh,
+      )
+      .subscribe();
+    return () => {
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.clearInterval(timer);
+      void supabase.removeChannel(channel);
+    };
+  }, [barbershopId, refreshAccount, session?.user.id]);
+
   const openLegacyAccount = useCallback(
     (path = '') => {
       if (!slug) return;
@@ -340,8 +391,9 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       if (rpcError) throw new Error(rpcError.message);
       const rows = Array.isArray(data) ? data : data ? [data] : [];
       if (rows.length === 0) throw new Error('O agendamento não foi criado.');
+      await refreshAccount();
     },
-    [barbershopId, slug],
+    [barbershopId, refreshAccount, slug],
   );
 
   const signIn = useCallback(async (email: string, password: string) => {
@@ -745,12 +797,19 @@ async function loadProfile(
   const monthStart = new Date();
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
-  const { count } = await supabase
+  const nextMonth = new Date(monthStart);
+  nextMonth.setMonth(nextMonth.getMonth() + 1);
+  const { data: monthRows } = await supabase
     .from('agendamentos')
-    .select('id', { count: 'exact', head: true })
+    .select('id, status')
     .eq('cliente_id', userId)
     .eq('barbershop_id', barbershopId)
-    .gte('data_inicio', monthStart.toISOString());
+    .gte('data_inicio', monthStart.toISOString())
+    .lt('data_inicio', nextMonth.toISOString());
+  const visits = (monthRows ?? []).filter((row) => {
+    const status = String(row.status ?? '').toLowerCase();
+    return status !== 'cancelado' && status !== 'canceled' && status !== 'cancelled';
+  }).length;
 
   return {
     user: {
@@ -760,7 +819,7 @@ async function loadProfile(
       membershipTier: active ? String(plan?.name ?? 'Clube VIP') : 'Sem plano',
       membershipTierId: active ? String(plan?.id ?? '') : '',
       loyaltyPoints: Number(loyalty?.points ?? 0),
-      visitsThisMonth: count ?? 0,
+      visitsThisMonth: visits,
       memberSince: loyalty?.member_since
         ? new Date(`${loyalty.member_since}T12:00:00`).getFullYear().toString()
         : '—',
