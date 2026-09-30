@@ -36,6 +36,22 @@ const GUEST_AVATAR =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><rect fill="#27272a" width="80" height="80"/><circle cx="40" cy="32" r="12" fill="#a1a1aa"/><ellipse cx="40" cy="62" rx="18" ry="12" fill="#a1a1aa"/></svg>',
   );
 
+export type ShopProfile = {
+  name: string;
+  address: string;
+  phone: string;
+  instagram: string;
+  photoUrl: string;
+};
+
+const emptyShop: ShopProfile = {
+  name: 'Barbearia',
+  address: '',
+  phone: '',
+  instagram: '',
+  photoUrl: '',
+};
+
 const guestUser: UserProfile = {
   name: 'Visitante',
   firstName: 'visitante',
@@ -61,6 +77,7 @@ type ShopContextValue = {
   slug: string | null;
   barbershopId: string | null;
   barbershopName: string;
+  shopProfile: ShopProfile;
   services: Service[];
   barbers: Barber[];
   plans: VipPlan[];
@@ -105,7 +122,8 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(Boolean(slug));
   const [error, setError] = useState<string | null>(null);
   const [barbershopId, setBarbershopId] = useState<string | null>(null);
-  const [barbershopName, setBarbershopName] = useState('Barbearia');
+  const [barbershopName, setBarbershopName] = useState(emptyShop.name);
+  const [shopProfile, setShopProfile] = useState<ShopProfile>(emptyShop);
   const [services, setServices] = useState<Service[]>([]);
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [plans, setPlans] = useState<VipPlan[]>([]);
@@ -128,6 +146,10 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     });
     return () => data.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    document.title = shopProfile.name || 'Barbearia';
+  }, [shopProfile.name]);
 
   useEffect(() => {
     if (!slug) {
@@ -171,14 +193,9 @@ export function ShopProvider({ children }: { children: ReactNode }) {
           await ensureClientProfile(id, earlyAuth.session.user);
         }
 
-        const info = await supabase
-          .from('barbearia_info')
-          .select('nome')
-          .eq('barbershop_id', id)
-          .limit(1)
-          .maybeSingle();
-        const name = String(info.data?.nome ?? '').trim();
-        if (name) setBarbershopName(name);
+        const shopInfo = await loadShopProfile(id);
+        setShopProfile(shopInfo);
+        setBarbershopName(shopInfo.name);
 
         const serviceRows = await supabase
           .from('servicos')
@@ -301,6 +318,9 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
   const refreshAccount = useCallback(async () => {
     if (!barbershopId) return;
+    const shopInfo = await loadShopProfile(barbershopId);
+    setShopProfile(shopInfo);
+    setBarbershopName(shopInfo.name);
     const { data } = await supabase.auth.getSession();
     const user = data.session?.user;
     if (!user) {
@@ -561,6 +581,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       slug,
       barbershopId,
       barbershopName,
+      shopProfile,
       services,
       barbers,
       plans,
@@ -591,6 +612,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       slug,
       barbershopId,
       barbershopName,
+      shopProfile,
       services,
       barbers,
       plans,
@@ -719,6 +741,24 @@ function iconForService(name: string): string {
   if (normalized.includes('pigment')) return 'palette';
   if (normalized.includes('hidrata')) return 'droplet';
   return 'scissors';
+}
+
+async function loadShopProfile(barbershopId: string): Promise<ShopProfile> {
+  const { data, error } = await supabase
+    .from('barbearia_info')
+    .select('nome, endereco, telefone, instagram, foto_url')
+    .eq('barbershop_id', barbershopId)
+    .limit(1);
+  if (error || !data?.length) return emptyShop;
+  const row = data[0] as Record<string, unknown>;
+  const name = String(row.nome ?? '').trim();
+  return {
+    name: name || emptyShop.name,
+    address: String(row.endereco ?? '').trim(),
+    phone: String(row.telefone ?? '').trim(),
+    instagram: String(row.instagram ?? '').trim(),
+    photoUrl: String(row.foto_url ?? '').trim(),
+  };
 }
 
 async function loadPendingReview(barbershopId: string, userId: string): Promise<PendingReview | null> {

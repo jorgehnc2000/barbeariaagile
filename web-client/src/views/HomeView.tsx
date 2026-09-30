@@ -15,7 +15,6 @@ import {
   Eye,
   Palette,
   Droplet,
-  Zap,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
@@ -50,7 +49,7 @@ const serviceIcons: Record<string, LucideIcon> = {
 };
 
 export function HomeView({ onNavigate }: HomeViewProps) {
-  const { currentUser, upcomingAppointment, barbers, services, pendingReview, submitReview, requestAuth } =
+  const { currentUser, upcomingAppointment, barbers, services, pendingReview, submitReview, requestAuth, shopProfile } =
     useShop();
   const greeting = getGreeting();
   const nextAt = upcomingAppointment?.startsAt
@@ -97,7 +96,11 @@ export function HomeView({ onNavigate }: HomeViewProps) {
       {/* ===== IMMERSIVE HERO ===== */}
       <section ref={heroRef} className="relative -mx-4 h-[90vh] overflow-hidden lg:-mx-8 lg:h-screen">
         <motion.div style={{ scale: heroScale }} className="absolute inset-0">
-          <img src={HERO_IMAGE} alt="Barbearia Moura's" className="h-full w-full object-cover" />
+          <img
+            src={shopProfile.photoUrl || HERO_IMAGE}
+            alt={shopProfile.name}
+            className="h-full w-full object-cover"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/60 to-ink-950/20" />
           <div className="absolute inset-0 bg-gradient-to-r from-ink-950/70 via-transparent to-transparent" />
         </motion.div>
@@ -239,7 +242,7 @@ export function HomeView({ onNavigate }: HomeViewProps) {
               <div className="relative flex items-start justify-between">
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-gold-500/70">
-                    Moura&apos;s · Membro
+                    {shopProfile.name} · Membro
                   </p>
                   <div className="mt-3 flex items-center gap-2.5">
                     <Crown size={20} className="text-gold-400" strokeWidth={2.5} />
@@ -430,14 +433,25 @@ export function HomeView({ onNavigate }: HomeViewProps) {
 
         {/* Tools / CTA */}
         <div className="relative overflow-hidden rounded-[2rem] border border-zinc-800/60">
-          <img src={TOOLS_IMAGE} alt="Ferramentas premium" className="h-72 w-full object-cover lg:h-full" />
+          <img
+            src={shopProfile.photoUrl || TOOLS_IMAGE}
+            alt={shopProfile.name}
+            className="h-72 w-full object-cover lg:h-full"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/50 to-transparent" />
           <div className="absolute inset-0 flex flex-col justify-end p-6 lg:p-7">
-            <Zap size={26} className="text-gold-500/40" />
+            <MapPin size={26} className="text-gold-500/40" />
             <p className="mt-2 font-display text-lg font-semibold leading-snug text-white">
-              Ferramentas premium, técnica refinada.
+              {shopProfile.name}
             </p>
-            <p className="mt-1 text-sm text-zinc-400">Cada detalhe pensado para você.</p>
+            <p className="mt-1 text-sm text-zinc-300">
+              {shopProfile.address || 'Endereço ainda não informado.'}
+            </p>
+            {(shopProfile.phone || shopProfile.instagram) && (
+              <p className="mt-1 text-sm text-zinc-400">
+                {[shopProfile.phone, shopProfile.instagram].filter(Boolean).join(' · ')}
+              </p>
+            )}
             <div className="mt-4">
               <Button
                 variant="outline"
@@ -445,7 +459,7 @@ export function HomeView({ onNavigate }: HomeViewProps) {
                 leftIcon={<MapPin size={16} />}
                 onClick={() => onNavigate('booking')}
               >
-                Visite a Barbearia
+                Agendar
               </Button>
             </div>
           </div>

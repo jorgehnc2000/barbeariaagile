@@ -1,4 +1,5 @@
 import { Scissors } from 'lucide-react';
+import { useShop } from '@/data/shop';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -12,7 +13,9 @@ const sizes = {
 };
 
 export function Logo({ size = 'md', showText = true }: LogoProps) {
+  const { shopProfile } = useShop();
   const s = sizes[size];
+  const title = shopProfile.name.trim() || 'Barbearia';
   return (
     <div className="flex items-center gap-3">
       <div
@@ -26,14 +29,9 @@ export function Logo({ size = 'md', showText = true }: LogoProps) {
       </div>
       {showText && (
         <div className="flex flex-col leading-none">
-          <span
-            className={[
-              'font-display font-extrabold tracking-tightest text-white',
-              s.text,
-            ].join(' ')}
-          >
-            Moura&apos;s
-          </span>
+            <span className={['max-w-[9rem] truncate font-display font-extrabold tracking-tightest text-white sm:max-w-[14rem]', s.text].join(' ')}>
+              {title}
+            </span>
           <span
             className={[
               'mt-0.5 uppercase tracking-[0.28em] text-gold-500/70 font-semibold',
