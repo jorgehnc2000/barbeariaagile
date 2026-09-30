@@ -227,10 +227,11 @@ Deno.serve(async (req: Request) => {
     }
     // Só reutiliza se for o mesmo plano, autorizado e sem pendência de pagamento.
     // Troca de plano / regularização de cartão sempre cria novo preapproval no MP.
-    const lastPayment = String(
+    const previousPaymentStatus = String(
       currentSubscription?.last_payment_status ?? "",
     ).toLowerCase();
-    const paymentHealthy = lastPayment === "" || lastPayment === "approved";
+    const paymentHealthy = previousPaymentStatus === "" ||
+      previousPaymentStatus === "approved";
     if (
       currentSubscription?.plan_id === localPlanId &&
       String(currentSubscription.status ?? "").toLowerCase() === "authorized" &&
