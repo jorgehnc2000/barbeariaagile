@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { fetchLastAuthorizedPayment } from "../_shared/mp_payments.ts";
 import { MP_SUBSCRIPTION_SUCCESS_URL } from "../_shared/app_urls.ts";
 
@@ -65,7 +64,7 @@ async function idempotencyKey(value: string) {
     .join("");
 }
 
-serve(async (req: Request) => {
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -228,10 +227,11 @@ serve(async (req: Request) => {
     }
     // Só reutiliza se for o mesmo plano, autorizado e sem pendência de pagamento.
     // Troca de plano / regularização de cartão sempre cria novo preapproval no MP.
-    const lastPayment = String(
+    const previousPaymentStatus = String(
       currentSubscription?.last_payment_status ?? "",
     ).toLowerCase();
-    const paymentHealthy = lastPayment === "" || lastPayment === "approved";
+    const paymentHealthy = previousPaymentStatus === "" ||
+      previousPaymentStatus === "approved";
     if (
       currentSubscription?.plan_id === localPlanId &&
       String(currentSubscription.status ?? "").toLowerCase() === "authorized" &&
@@ -270,9 +270,13 @@ serve(async (req: Request) => {
 
     const newPreapprovalId = String(mercadoPagoData.id ?? "").trim();
     if (!mercadoPagoResponse.ok || !newPreapprovalId) {
+      const mpMessage = String(mercadoPagoData.message ?? "");
+      const error = mpMessage.includes("CC_VAL_433")
+        ? "O Mercado Pago recusou este cartão. Confira número, validade, CVV e CPF do titular."
+        : mpMessage || "Erro no Mercado Pago.";
       return jsonResponse(
         {
-          error: "Erro no Mercado Pago.",
+          error,
           status: mercadoPagoResponse.status,
           details: mercadoPagoData,
         },
