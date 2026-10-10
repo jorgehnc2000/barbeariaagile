@@ -24,6 +24,9 @@ class _InfoBarbeariaPageState extends State<InfoBarbeariaPage> {
   final _enderecoController = TextEditingController();
   final _instagramController = TextEditingController();
   final _fotoUrlController = TextEditingController();
+  final _pointsController = TextEditingController(text: '50');
+  final _rewardAtController = TextEditingController(text: '1500');
+  final _rewardNameController = TextEditingController();
 
   dynamic _barbeariaId;
   bool _existeRegistro = false;
@@ -36,6 +39,9 @@ class _InfoBarbeariaPageState extends State<InfoBarbeariaPage> {
   bool _saving = false;
   bool _vipEnabled = false;
   bool _savingVip = false;
+  bool _loyaltyEnabled = true;
+  String? _rewardServiceId;
+  List<Map<String, String>> _services = [];
   String? _loadError;
 
   SupabaseClient get _client => Supabase.instance.client;
@@ -76,6 +82,9 @@ class _InfoBarbeariaPageState extends State<InfoBarbeariaPage> {
     _enderecoController.dispose();
     _instagramController.dispose();
     _fotoUrlController.dispose();
+    _pointsController.dispose();
+    _rewardAtController.dispose();
+    _rewardNameController.dispose();
     for (final controller in _textoControllers) {
       controller.dispose();
     }
@@ -95,7 +104,11 @@ class _InfoBarbeariaPageState extends State<InfoBarbeariaPage> {
     });
 
     try {
-      await Future.wait([_loadBarbeariaInfo(), _loadVipFlag()]);
+      await Future.wait([
+        _loadBarbeariaInfo(),
+        _loadVipFlag(),
+        _loadLoyalty(),
+      ]);
     } catch (error) {
       _loadError = error.toString();
     } finally {
@@ -149,6 +162,47 @@ class _InfoBarbeariaPageState extends State<InfoBarbeariaPage> {
         .maybeSingle();
     _vipEnabled = row?['vip_enabled'] == true;
     _syncRuntimeVipFlag();
+  }
+
+  Future<void> _loadLoyalty() async {
+    final barbershopId = BarbershopRuntimeConfig.requireCurrentId();
+    try {
+      final services = await _client
+          .from('servicos')
+          .select('id, nome')
+          .eq('barbershop_id', barbershopId)
+          .order('nome');
+      _services = (services as List<dynamic>)
+          .map((row) {
+            final data = Map<String, dynamic>.from(row as Map);
+            return {
+              'id': data['id'].toString(),
+              'nome': (data['nome'] as String?) ?? 'Serviço',
+            };
+          })
+          .toList();
+
+      final row = await _client
+          .from('loyalty_settings')
+          .select(
+            'enabled, points_per_completed_visit, reward_at, reward_name, reward_service_id',
+          )
+          .eq('barbershop_id', barbershopId)
+          .maybeSingle();
+      _loyaltyEnabled = row?['enabled'] != false;
+      _pointsController.text =
+          (row?['points_per_completed_visit'] as num?)?.toString() ?? '50';
+      _rewardAtController.text =
+          (row?['reward_at'] as num?)?.toString() ?? '1500';
+      _rewardNameController.text = row?['reward_name'] as String? ?? '';
+      final serviceId = row?['reward_service_id']?.toString();
+      _rewardServiceId = _services.any((service) => service['id'] == serviceId)
+          ? serviceId
+          : null;
+    } catch (_) {
+      _loyaltyEnabled = true;
+      _services = [];
+    }
   }
 
   void _syncRuntimeVipFlag() {
@@ -239,6 +293,25 @@ class _InfoBarbeariaPageState extends State<InfoBarbeariaPage> {
 
   Future<void> _salvarAlteracoes() async {
     final barbershopId = BarbershopRuntimeConfig.requireCurrentId();
+    final points = int.tryParse(_pointsController.text.trim());
+    final rewardAt = int.tryParse(_rewardAtController.text.trim());
+    if (points == null || points < 0) {
+      showAdminSnack(
+        context,
+        'Informe quantos pontos cada visita vale.',
+        error: true,
+      );
+      return;
+    }
+    if (rewardAt == null || rewardAt <= 0) {
+      showAdminSnack(
+        context,
+        'Informe quantos pontos liberam a recompensa.',
+        error: true,
+      );
+      return;
+    }
+
     setState(() => _saving = true);
 
     try {
@@ -273,9 +346,19 @@ class _InfoBarbeariaPageState extends State<InfoBarbeariaPage> {
         _existeRegistro = true;
       }
 
+      await _client.from('loyalty_settings').upsert({
+        'barbershop_id': barbershopId,
+        'enabled': _loyaltyEnabled,
+        'points_per_completed_visit': points,
+        'reward_at': rewardAt,
+        'reward_name': _rewardNameController.text.trim(),
+        'reward_service_id': _rewardServiceId,
+      });
+
       if (!mounted) return;
       showAdminSnack(context, 'Alterações salvas com sucesso!');
       await _loadBarbeariaInfo();
+      await _loadLoyalty();
     } catch (error) {
       if (!mounted) return;
       showAdminSnack(
@@ -482,6 +565,86 @@ class _InfoBarbeariaPageState extends State<InfoBarbeariaPage> {
                               ),
                       );
                     }),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              _SettingsCard(
+                title: 'Clube de pontos',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Defina quantos pontos cada visita concluída vale e qual recompensa o cliente ganha.',
+                      style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                    ),
+                    const SizedBox(height: 8),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text(
+                        'Ativar clube de pontos nesta barbearia',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      value: _loyaltyEnabled,
+                      activeThumbColor: AppColors.accentGold,
+                      onChanged: (value) =>
+                          setState(() => _loyaltyEnabled = value),
+                    ),
+                    const SizedBox(height: 8),
+                    AdminCardGrid(
+                      gap: 16,
+                      columnsForWidth: (width) => width >= 700 ? 2 : 1,
+                      children: [
+                        TextField(
+                          controller: _pointsController,
+                          keyboardType: TextInputType.number,
+                          decoration: adminInputDecoration(
+                            label: 'Pontos por visita',
+                            icon: Icons.star_outline_rounded,
+                          ),
+                        ),
+                        TextField(
+                          controller: _rewardAtController,
+                          keyboardType: TextInputType.number,
+                          decoration: adminInputDecoration(
+                            label: 'Pontos para a recompensa',
+                            icon: Icons.flag_outlined,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _rewardNameController,
+                      decoration: adminInputDecoration(
+                        label: 'Nome da recompensa',
+                        icon: Icons.card_giftcard_outlined,
+                        hint: 'Ex.: Barba grátis',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: _rewardServiceId ?? '',
+                      decoration: const InputDecoration(
+                        labelText: 'Serviço da recompensa',
+                      ),
+                      items: [
+                        const DropdownMenuItem<String>(
+                          value: '',
+                          child: Text('Nenhum serviço'),
+                        ),
+                        ..._services.map(
+                          (service) => DropdownMenuItem<String>(
+                            value: service['id'] ?? '',
+                            child: Text(service['nome'] ?? 'Serviço'),
+                          ),
+                        ),
+                      ],
+                      onChanged: (value) => setState(() {
+                        _rewardServiceId =
+                            value == null || value.isEmpty ? null : value;
+                      }),
+                    ),
                   ],
                 ),
               ),

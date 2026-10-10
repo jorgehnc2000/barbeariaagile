@@ -17,6 +17,7 @@ export const currentUser: UserProfile = {
   visitsThisMonth: 3,
   memberSince: '2023',
   nextRewardAt: 1500,
+  rewardName: '',
 };
 
 export const services: Service[] = [

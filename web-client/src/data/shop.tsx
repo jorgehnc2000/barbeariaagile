@@ -62,6 +62,7 @@ const guestUser: UserProfile = {
   visitsThisMonth: 0,
   memberSince: '—',
   nextRewardAt: 1,
+  rewardName: '',
 };
 
 export type PendingReview = {
@@ -884,7 +885,11 @@ async function loadProfile(
       .eq('user_id', userId)
       .eq('barbershop_id', barbershopId)
       .maybeSingle(),
-    supabase.from('loyalty_settings').select('reward_at').eq('barbershop_id', barbershopId).maybeSingle(),
+    supabase
+      .from('loyalty_settings')
+      .select('reward_at, reward_name')
+      .eq('barbershop_id', barbershopId)
+      .maybeSingle(),
   ]);
 
   const { data: subscription } = await supabase
@@ -929,6 +934,7 @@ async function loadProfile(
         ? new Date(`${loyalty.member_since}T12:00:00`).getFullYear().toString()
         : '—',
       nextRewardAt: Number(settings?.reward_at ?? 1500),
+      rewardName: String(settings?.reward_name ?? '').trim(),
     },
   };
 }

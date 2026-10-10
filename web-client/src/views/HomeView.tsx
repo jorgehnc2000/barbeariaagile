@@ -65,10 +65,12 @@ export function HomeView({ onNavigate }: HomeViewProps) {
   const heroTextY = useTransform(scrollYProgress, [0, 1], [0, -80]);
   const countdown = useCountdown(nextAt);
 
-  const loyaltyProgress = Math.min(
-    100,
-    (currentUser.loyaltyPoints / currentUser.nextRewardAt) * 100,
-  );
+  const rewardAt = currentUser.nextRewardAt > 0 ? currentUser.nextRewardAt : 1;
+  const loyaltyProgress = Math.min(100, (currentUser.loyaltyPoints / rewardAt) * 100);
+  const pointsLeft = Math.max(0, rewardAt - currentUser.loyaltyPoints);
+  const rewardLine = currentUser.rewardName
+    ? `${currentUser.rewardName} · ${pointsLeft} pts restantes`
+    : `${pointsLeft} pts restantes`;
 
   return (
     <div className="space-y-10">
@@ -255,8 +257,8 @@ export function HomeView({ onNavigate }: HomeViewProps) {
               <div className="relative mt-7">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-zinc-400">Próxima recompensa</span>
-                  <span className="font-semibold text-gold-400">
-                    {currentUser.nextRewardAt - currentUser.loyaltyPoints} pts restantes
+                  <span className="min-w-0 truncate text-right font-semibold text-gold-400" title={rewardLine}>
+                    {rewardLine}
                   </span>
                 </div>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-zinc-800">

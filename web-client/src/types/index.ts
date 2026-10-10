@@ -53,4 +53,5 @@ export interface UserProfile {
   visitsThisMonth: number;
   memberSince: string;
   nextRewardAt: number;
+  rewardName: string;
 }
