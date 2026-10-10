@@ -1,34 +1,109 @@
 name: Supabase keep-alive
 
-# Free-tier Supabase pauses after ~7 days without Postgres activity.
-# A scheduled REST read resets the inactivity window (see Supabase docs).
+# The free tier pauses a project after about 7 days without database activity.
+# A paused project drops its hostname, so a curl to *.supabase.co fails with
+# "Could not resolve host" and can never wake it. This job asks the Management
+# API (api.supabase.com) to restore a paused project, then reads one row.
 
 on:
   schedule:
-    - cron: "0 12 */2 * *"
+    - cron: "17 11,23 * * *"
   workflow_dispatch:
 
 jobs:
   ping-database:
     runs-on: ubuntu-latest
     steps:
-      - name: Query barbershops (PostgREST → Postgres)
+      - name: Restore if paused, then query the database
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
           set -euo pipefail
+
           if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
             echo "Missing SUPABASE_URL or SUPABASE_ANON_KEY repository secrets."
             exit 1
           fi
-          code="$(curl -sS -o /tmp/supabase-keepalive.json -w "%{http_code}" \
-            -H "apikey: ${SUPABASE_ANON_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
-            "${SUPABASE_URL}/rest/v1/barbershops?select=id&limit=1")"
-          echo "HTTP ${code}"
-          cat /tmp/supabase-keepalive.json
-          if [ "$code" != "200" ]; then
-            echo "Keep-alive failed (project paused or RLS/network). Resume in Supabase Dashboard."
-            exit 1
+
+          api() {
+            local method="$1"
+            local path="$2"
+            local output="$3"
+            curl -sS --max-time 40 -o "$output" -w "%{http_code}" \
+              -X "$method" \
+              -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
+              -H "Content-Type: application/json" \
+              "https://api.supabase.com/v1${path}"
+          }
+
+          project_status() {
+            local ref="$1"
+            local body
+            body="$(mktemp)"
+            local code
+            code="$(api GET "/projects/${ref}" "$body")"
+            if [ "$code" != "200" ]; then
+              echo "unknown"
+              rm -f "$body"
+              return 0
+            fi
+            jq -r '.status // "unknown"' "$body"
+            rm -f "$body"
+          }
+
+          restore_if_paused() {
+            local ref="$1"
+            local status
+            status="$(project_status "$ref")"
+            echo "${ref} status=${status}"
+            if [ "$status" != "INACTIVE" ]; then
+              return 0
+            fi
+            local body
+            body="$(mktemp)"
+            local code
+            code="$(api POST "/projects/${ref}/restore" "$body")"
+            echo "${ref} restore HTTP ${code}"
+            rm -f "$body"
+          }
+
+          if [ -z "${SUPABASE_ACCESS_TOKEN:-}" ]; then
+            echo "SUPABASE_ACCESS_TOKEN is not set. A paused project cannot be woken by pinging its own hostname."
+          else
+            restore_if_paused "rgrhalzcbhhydizlgztn"
+            restore_if_paused "jwszdvpdwixcydnbdkjk"
           fi
+
+          url="${SUPABASE_URL%/}/rest/v1/barbershops?select=id&limit=1"
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            body="$(mktemp)"
+            set +e
+            code="$(curl -sS --max-time 25 -o "$body" -w "%{http_code}" \
+              -H "apikey: ${SUPABASE_ANON_KEY}" \
+              -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+              "$url")"
+            curl_status=$?
+            set -e
+            if [ "$curl_status" -ne 0 ]; then
+              echo "attempt ${attempt}: database host did not resolve yet"
+              rm -f "$body"
+              sleep 30
+              continue
+            fi
+            echo "attempt ${attempt}: HTTP ${code}"
+            if [ "$code" = "200" ]; then
+              rm -f "$body"
+              echo "Keep-alive ok."
+              exit 0
+            fi
+            rm -f "$body"
+            sleep 30
+          done
+
+          echo "Keep-alive failed."
+          if [ -z "${SUPABASE_ACCESS_TOKEN:-}" ]; then
+            echo "Create a token at https://supabase.com/dashboard/account/tokens and save it as the GitHub secret SUPABASE_ACCESS_TOKEN. Do not paste the token in chat."
+          fi
+          exit 1
