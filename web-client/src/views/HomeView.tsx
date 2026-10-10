@@ -89,7 +89,8 @@ export function HomeView({ onNavigate }: HomeViewProps) {
         <ReviewPrompt
           serviceName={pendingReview.serviceName}
           barberName={pendingReview.barberName}
-          onRate={(rating) => void submitReview(rating)}
+          barberAvatarUrl={pendingReview.barberAvatarUrl}
+          onRate={submitReview}
         />
       )}
 
@@ -588,29 +589,100 @@ function getGreeting(): string {
 function ReviewPrompt({
   serviceName,
   barberName,
+  barberAvatarUrl,
   onRate,
 }: {
   serviceName: string;
   barberName: string;
-  onRate: (rating: number) => void;
+  barberAvatarUrl: string;
+  onRate: (rating: number) => Promise<void>;
 }) {
+  const [hover, setHover] = useState(0);
+  const [sending, setSending] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const lit = hover || sending;
+
+  async function rate(rating: number) {
+    if (sending) return;
+    setSending(rating);
+    setError(null);
+    try {
+      await onRate(rating);
+    } catch (err) {
+      setSending(0);
+      setError(err instanceof Error ? err.message : 'Não foi possível salvar a avaliação.');
+    }
+  }
+
   return (
-    <div className="rounded-2xl border border-gold-500/30 bg-ink-900/80 p-4">
-      <p className="text-sm text-zinc-200">
-        Como foi {serviceName} com {barberName}?
-      </p>
-      <div className="mt-3 flex gap-2">
-        {[1, 2, 3, 4, 5].map((rating) => (
-          <button
-            key={rating}
-            type="button"
-            onClick={() => onRate(rating)}
-            className="rounded-xl border border-zinc-700 px-3 py-2 text-sm text-gold-400 hover:border-gold-500"
+    <Card className="max-w-md overflow-hidden p-0">
+      <div className="grid min-h-[9.25rem] grid-cols-[5.75rem_1fr] sm:grid-cols-[9.5rem_1fr]">
+        <BarberPortrait name={barberName} url={barberAvatarUrl} />
+        <div className="flex min-w-0 flex-col justify-center py-3.5 pr-3 sm:py-4 sm:pr-4">
+          <p className="text-sm text-zinc-200">Como foi {serviceName}?</p>
+          <p className="mt-0.5 truncate font-display text-lg font-bold text-white" title={barberName}>
+            {barberName}
+          </p>
+          <p className="text-[10px] uppercase tracking-wide text-zinc-500">
+            {sending ? 'Salvando sua nota' : 'Avalie de 1 a 5'}
+          </p>
+          <div
+            className="mt-2.5 flex gap-1"
+            role="group"
+            aria-label={`Nota de 1 a 5 para ${barberName}`}
           >
-            {rating}
-          </button>
-        ))}
+            {[1, 2, 3, 4, 5].map((rating) => {
+              const active = rating <= lit;
+              return (
+                <button
+                  key={rating}
+                  type="button"
+                  disabled={sending > 0}
+                  aria-label={`Nota ${rating}`}
+                  aria-pressed={sending === rating}
+                  onMouseEnter={() => setHover(rating)}
+                  onMouseLeave={() => setHover(0)}
+                  onFocus={() => setHover(rating)}
+                  onBlur={() => setHover(0)}
+                  onClick={() => void rate(rating)}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl text-gold-400 transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 disabled:hover:scale-100"
+                >
+                  <Star
+                    size={22}
+                    strokeWidth={1.75}
+                    className={active ? 'fill-gold-400 text-gold-400' : 'fill-transparent text-gold-400/80'}
+                  />
+                </button>
+              );
+            })}
+          </div>
+          {error && <p className="mt-2 text-sm text-red-300">{error}</p>}
+        </div>
       </div>
+    </Card>
+  );
+}
+
+function BarberPortrait({ name, url }: { name: string; url: string }) {
+  const [failed, setFailed] = useState(false);
+  const initial = name.trim().charAt(0).toUpperCase() || '?';
+  const showPhoto = Boolean(url) && !failed;
+
+  return (
+    <div className="relative min-h-[9.25rem]">
+      {showPhoto ? (
+        <img
+          src={url}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover object-[center_20%]"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-ink-800 font-display text-4xl font-bold text-gold-400">
+          {initial}
+        </div>
+      )}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-ink-850/5 to-ink-850" />
     </div>
   );
 }

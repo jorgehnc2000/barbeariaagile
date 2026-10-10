@@ -68,6 +68,7 @@ export type PendingReview = {
   appointmentId: string;
   barberId: string;
   barberName: string;
+  barberAvatarUrl: string;
   serviceName: string;
 };
 
@@ -764,7 +765,7 @@ async function loadShopProfile(barbershopId: string): Promise<ShopProfile> {
 async function loadPendingReview(barbershopId: string, userId: string): Promise<PendingReview | null> {
   const { data: bookings, error } = await supabase
     .from('agendamentos')
-    .select('id, barbeiro_id, status, data_inicio, barbeiros(nome), servicos(nome)')
+    .select('id, barbeiro_id, status, data_inicio, barbeiros(nome, foto_url), servicos(nome)')
     .eq('cliente_id', userId)
     .eq('barbershop_id', barbershopId)
     .lt('data_inicio', new Date().toISOString())
@@ -786,12 +787,13 @@ async function loadPendingReview(barbershopId: string, userId: string): Promise<
   const reviewed = new Set((reviews ?? []).map((row) => String(row.agendamento_id)));
   const pending = done.find((row) => !reviewed.has(String(row.id)));
   if (!pending) return null;
-  const barber = firstJoin(pending.barbeiros);
+  const barber = firstJoin(pending.barbeiros) as { nome?: string; foto_url?: string } | null;
   const service = firstJoin(pending.servicos);
   return {
     appointmentId: String(pending.id),
     barberId: String(pending.barbeiro_id),
     barberName: String(barber?.nome ?? 'Barbeiro'),
+    barberAvatarUrl: String(barber?.foto_url ?? '').trim(),
     serviceName: String(service?.nome ?? 'serviço'),
   };
 }
