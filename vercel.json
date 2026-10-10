@@ -1,7 +1,7 @@
 {
   "framework": null,
   "installCommand": "npm ci --prefix web-client",
-  "buildCommand": "npm run build --prefix web-client",
+  "buildCommand": "bash scripts/vercel_build.sh",
   "outputDirectory": "web-client/dist",
   "rewrites": [
     {
@@ -12,6 +12,11 @@
       "source": "/api/create-subscription",
       "destination": "https://rgrhalzcbhhydizlgztn.supabase.co/functions/v1/create-subscription"
     },
+    { "source": "/admin", "destination": "/painel/index.html" },
+    { "source": "/sucesso-assinatura", "destination": "/painel/index.html" },
+    { "source": "/:slug/login", "destination": "/painel/index.html" },
+    { "source": "/:slug/admin", "destination": "/painel/index.html" },
+    { "source": "/:slug/admin/:path*", "destination": "/painel/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
