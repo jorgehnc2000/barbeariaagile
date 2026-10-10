@@ -85,15 +85,6 @@ export function HomeView({ onNavigate }: HomeViewProps) {
         </button>
       </header>
 
-      {pendingReview && (
-        <ReviewPrompt
-          serviceName={pendingReview.serviceName}
-          barberName={pendingReview.barberName}
-          barberAvatarUrl={pendingReview.barberAvatarUrl}
-          onRate={submitReview}
-        />
-      )}
-
       {/* ===== IMMERSIVE HERO ===== */}
       <section ref={heroRef} className="relative -mx-4 h-[90vh] overflow-hidden lg:-mx-8 lg:h-screen">
         <motion.div style={{ scale: heroScale }} className="absolute inset-0">
@@ -290,6 +281,33 @@ export function HomeView({ onNavigate }: HomeViewProps) {
           </div>
         </TiltCard>
       </motion.section>
+
+      {pendingReview && (
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div className="mb-5">
+            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-gold-500/80">
+              Avaliação
+            </p>
+            <h2 className="font-display text-2xl font-bold tracking-tight text-white lg:text-3xl">
+              Sua última visita
+            </h2>
+          </div>
+          <div className="lg:max-w-xl">
+            <ReviewPrompt
+              serviceName={pendingReview.serviceName}
+              barberName={pendingReview.barberName}
+              barberAvatarUrl={pendingReview.barberAvatarUrl}
+              visitedOn={pendingReview.visitedOn}
+              onRate={submitReview}
+            />
+          </div>
+        </motion.section>
+      )}
 
       {/* ===== SERVICES EDITORIAL ===== */}
       <motion.section
@@ -590,11 +608,13 @@ function ReviewPrompt({
   serviceName,
   barberName,
   barberAvatarUrl,
+  visitedOn,
   onRate,
 }: {
   serviceName: string;
   barberName: string;
   barberAvatarUrl: string;
+  visitedOn: string;
   onRate: (rating: number) => Promise<void>;
 }) {
   const [hover, setHover] = useState(0);
@@ -615,7 +635,7 @@ function ReviewPrompt({
   }
 
   return (
-    <Card className="max-w-md overflow-hidden p-0">
+    <Card className="w-full overflow-hidden p-0">
       <div className="grid min-h-[9.25rem] grid-cols-[5.75rem_1fr] sm:grid-cols-[9.5rem_1fr]">
         <BarberPortrait name={barberName} url={barberAvatarUrl} />
         <div className="flex min-w-0 flex-col justify-center py-3.5 pr-3 sm:py-4 sm:pr-4">
@@ -624,7 +644,7 @@ function ReviewPrompt({
             {barberName}
           </p>
           <p className="text-[10px] uppercase tracking-wide text-zinc-500">
-            {sending ? 'Salvando sua nota' : 'Avalie de 1 a 5'}
+            {sending ? 'Salvando sua nota' : visitedOn}
           </p>
           <div
             className="mt-2.5 flex gap-1"

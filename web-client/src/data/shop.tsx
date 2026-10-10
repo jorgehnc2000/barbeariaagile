@@ -70,6 +70,7 @@ export type PendingReview = {
   barberName: string;
   barberAvatarUrl: string;
   serviceName: string;
+  visitedOn: string;
 };
 
 type ShopContextValue = {
@@ -279,7 +280,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         const next = await loadUpcoming(id, userId);
         if (!cancelled) setUpcomingAppointment(next);
         const review = await loadPendingReview(id, userId);
-        if (!cancelled) setPendingReview(review);
+        if (!cancelled) setPendingReview(hideRememberedReview(userId, review));
       } catch (cause) {
         if (!cancelled) {
           setError(cause instanceof Error ? cause.message : 'Falha ao carregar a barbearia.');
@@ -333,7 +334,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     const profile = await loadProfile(barbershopId, user.id, user);
     setCurrentUser(profile.user);
     setUpcomingAppointment(await loadUpcoming(barbershopId, user.id));
-    setPendingReview(await loadPendingReview(barbershopId, user.id));
+    setPendingReview(hideRememberedReview(user.id, await loadPendingReview(barbershopId, user.id)));
   }, [barbershopId]);
 
   useEffect(() => {
@@ -453,14 +454,31 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       if (!pendingReview || !barbershopId || !session?.user.id) {
         throw new Error('Entre na conta para avaliar.');
       }
-      const { error: insertError } = await supabase.from('barber_reviews').insert({
-        barbershop_id: barbershopId,
-        barbeiro_id: pendingReview.barberId,
-        cliente_id: session.user.id,
-        agendamento_id: pendingReview.appointmentId,
-        rating,
-      });
-      if (insertError) throw new Error(insertError.message);
+      const appointmentId = pendingReview.appointmentId;
+      const userId = session.user.id;
+      const inserted = await supabase
+        .from('barber_reviews')
+        .insert({
+          barbershop_id: barbershopId,
+          barbeiro_id: pendingReview.barberId,
+          cliente_id: userId,
+          agendamento_id: appointmentId,
+          rating,
+        })
+        .select('id')
+        .maybeSingle();
+      if (inserted.error) {
+        if (inserted.error.code === '23505') {
+          rememberRatedVisit(userId, appointmentId);
+          setPendingReview(null);
+          return;
+        }
+        throw new Error(reviewWriteMessage(inserted.error));
+      }
+      if (!inserted.data?.id) {
+        throw new Error('A nota não foi gravada. Tente de novo.');
+      }
+      rememberRatedVisit(userId, appointmentId);
       setPendingReview(null);
       const ratings = await supabase.rpc('barber_rating_summary', { p_barbershop_id: barbershopId });
       if (!ratings.error && ratings.data) {
@@ -762,10 +780,54 @@ async function loadShopProfile(barbershopId: string): Promise<ShopProfile> {
   };
 }
 
+function ratedVisitKey(userId: string) {
+  return `barber-review-rated:${userId}`;
+}
+
+function readRatedVisits(userId: string): Set<string> {
+  try {
+    const raw = localStorage.getItem(ratedVisitKey(userId));
+    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
+    return new Set(Array.isArray(parsed) ? parsed.map((id) => String(id)) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function rememberRatedVisit(userId: string, appointmentId: string) {
+  const ids = readRatedVisits(userId);
+  ids.add(appointmentId);
+  localStorage.setItem(ratedVisitKey(userId), JSON.stringify([...ids].slice(-30)));
+}
+
+function hideRememberedReview(userId: string, review: PendingReview | null) {
+  if (!review || readRatedVisits(userId).has(review.appointmentId)) return null;
+  return review;
+}
+
+function reviewWriteMessage(error: { message?: string; code?: string }) {
+  const message = String(error.message ?? '').toLowerCase();
+  if (message.includes('row-level security')) {
+    return 'Sua conta não pôde gravar esta avaliação.';
+  }
+  if (message.includes('does not exist') || message.includes('schema cache')) {
+    return 'O registro de avaliações ainda não está ativo nesta barbearia.';
+  }
+  if (error.code === '23503') return 'Não foi possível ligar esta nota à visita.';
+  return 'Não foi possível gravar a nota. Tente de novo.';
+}
+
+function visitHasEnded(row: { status?: unknown; data_inicio?: unknown; data_fim?: unknown }) {
+  const status = String(row.status ?? '').toLowerCase();
+  if (!['confirmado', 'concluido', 'completed', 'finalizado'].includes(status)) return false;
+  const end = new Date(String(row.data_fim || row.data_inicio || ''));
+  return !Number.isNaN(end.getTime()) && end.getTime() < Date.now();
+}
+
 async function loadPendingReview(barbershopId: string, userId: string): Promise<PendingReview | null> {
   const { data: bookings, error } = await supabase
     .from('agendamentos')
-    .select('id, barbeiro_id, status, data_inicio, barbeiros(nome, foto_url), servicos(nome)')
+    .select('id, barbeiro_id, status, data_inicio, data_fim, barbeiros(nome, foto_url), servicos(nome)')
     .eq('cliente_id', userId)
     .eq('barbershop_id', barbershopId)
     .lt('data_inicio', new Date().toISOString())
@@ -773,28 +835,29 @@ async function loadPendingReview(barbershopId: string, userId: string): Promise<
     .limit(8);
   if (error || !bookings) return null;
 
-  const done = bookings.filter((row) => {
-    const status = String(row.status ?? '').toLowerCase();
-    return ['confirmado', 'concluido', 'completed', 'finalizado'].includes(status);
-  });
-  if (done.length === 0) return null;
+  const latest = bookings.find((row) => visitHasEnded(row));
+  if (!latest) return null;
+  if (readRatedVisits(userId).has(String(latest.id))) return null;
 
-  const ids = done.map((row) => String(row.id));
-  const { data: reviews } = await supabase
+  const { data: reviews, error: reviewError } = await supabase
     .from('barber_reviews')
     .select('agendamento_id')
-    .in('agendamento_id', ids);
-  const reviewed = new Set((reviews ?? []).map((row) => String(row.agendamento_id)));
-  const pending = done.find((row) => !reviewed.has(String(row.id)));
-  if (!pending) return null;
-  const barber = firstJoin(pending.barbeiros) as { nome?: string; foto_url?: string } | null;
-  const service = firstJoin(pending.servicos);
+    .eq('agendamento_id', latest.id)
+    .limit(1);
+  if (!reviewError && (reviews ?? []).length > 0) return null;
+
+  const barber = firstJoin(latest.barbeiros) as { nome?: string; foto_url?: string } | null;
+  const service = firstJoin(latest.servicos);
+  const when = new Date(String(latest.data_fim || latest.data_inicio || ''));
   return {
-    appointmentId: String(pending.id),
-    barberId: String(pending.barbeiro_id),
+    appointmentId: String(latest.id),
+    barberId: String(latest.barbeiro_id),
     barberName: String(barber?.nome ?? 'Barbeiro'),
     barberAvatarUrl: String(barber?.foto_url ?? '').trim(),
     serviceName: String(service?.nome ?? 'serviço'),
+    visitedOn: Number.isNaN(when.getTime())
+      ? 'Visita realizada'
+      : when.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }),
   };
 }
 
